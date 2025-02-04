@@ -10,13 +10,14 @@ const productSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    image: {
+    source: {
         type: String,
-        required: true,
+        default: "China",
     },
     category: {
         type: String,
         required: true,
+        enum: ["Ribbons", "Tapes", "Creasing Channel", "Die Ejection Rubber", "Magnets", "Other"],
     },
     description: {
         type: String,
@@ -31,11 +32,26 @@ const productSchema = new mongoose.Schema({
         type: Number,
         required: true,
         default: 0,
-    }
-}, {
-    timestamps: true,
-})
+    },
+    image: {
+        type: String,
+        required: true,
+    },
+    inStock: {
+        type: Boolean,
+        required: true,
+        default: true,
+    },
 
-const Product = mongoose.model("Product", productSchema)
+    // ✅ Dynamic specifications field (admin-defined key-value pairs)
+    specifications: {
+        type: Map,
+        of: String, // ✅ Allows storing { "Color": "Red", "Thickness": "2mm", "Hardness": "60 Shore A" }
+        default: {},
+    },
+
+}, { timestamps: true });
+
+const Product = mongoose.model("Product", productSchema);
 
 export default Product;
