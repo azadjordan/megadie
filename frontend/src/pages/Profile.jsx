@@ -29,15 +29,17 @@ const Profile = () => {
   const handleUpdateProfile = async (e) => {
     e.preventDefault();
     setMessage(null);
-
+  
     try {
-      dispatch(setCredentials({ ...userInfo, name, phoneNumber, address }));
       await updateUserProfile({ name, phoneNumber, address }).unwrap();
+      dispatch(setCredentials({ ...userInfo, name, phoneNumber, address })); // Only update state after success
       setMessage({ type: "success", text: "Profile updated successfully" });
     } catch (error) {
       setMessage({ type: "error", text: "Failed to update profile" });
     }
   };
+  
+  
 
   return (
     <div className="max-w-3xl mx-auto bg-white p-6 rounded-md shadow-md mt-12">

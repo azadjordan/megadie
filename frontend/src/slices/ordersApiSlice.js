@@ -3,7 +3,7 @@ import { ORDERS_URL } from "../constants";
 
 export const ordersApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    // ✅ Create a new order (Invalidate My Orders after creation)
+    // ✅ Create a new order
     createOrder: builder.mutation({
       query: (data) => ({
         url: `${ORDERS_URL}/`,
@@ -14,7 +14,7 @@ export const ordersApiSlice = apiSlice.injectEndpoints({
       invalidatesTags: ["Orders"], // ✅ Ensures MyOrders refetches automatically
     }),
 
-    // ✅ Get a single order by ID (for order details)
+    // ✅ Get a single order by ID
     getOrderById: builder.query({
       query: (orderId) => ({
         url: `${ORDERS_URL}/${orderId}`,
@@ -22,6 +22,7 @@ export const ordersApiSlice = apiSlice.injectEndpoints({
         credentials: "include",
       }),
       providesTags: ["Order"],
+      keepUnusedDataFor: 300, // ✅ Keeps order details cached for 5 minutes
     }),
 
     // ✅ Get logged-in user's orders
@@ -31,7 +32,8 @@ export const ordersApiSlice = apiSlice.injectEndpoints({
         method: "GET",
         credentials: "include",
       }),
-      providesTags: ["Orders"], // ✅ Allows automatic refetching
+      providesTags: ["Orders"],
+      keepUnusedDataFor: 600, // ✅ Keeps MyOrders cached for 10 minutes
     }),
 
     // ✅ Get all orders (Admin only)
@@ -42,9 +44,10 @@ export const ordersApiSlice = apiSlice.injectEndpoints({
         credentials: "include",
       }),
       providesTags: ["Orders"],
+      keepUnusedDataFor: 120, // ✅ Keeps admin OrderList cached for 2 minutes
     }),
 
-    // ✅ Update order to paid (Admin only)
+    // ✅ Update order to paid
     updateOrderToPaid: builder.mutation({
       query: (orderId) => ({
         url: `${ORDERS_URL}/${orderId}/pay`,
@@ -54,7 +57,7 @@ export const ordersApiSlice = apiSlice.injectEndpoints({
       invalidatesTags: ["Order"],
     }),
 
-    // ✅ Update order to delivered (Admin only)
+    // ✅ Update order to delivered
     updateOrderToDelivered: builder.mutation({
       query: (orderId) => ({
         url: `${ORDERS_URL}/${orderId}/deliver`,

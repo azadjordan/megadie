@@ -38,7 +38,7 @@ const Header = () => {
           <NavLinks userInfo={userInfo} totalQuantity={totalQuantity} onLogout={logoutHandler} />
         </div>
 
-        {/* Mobile Menu Button (Increased Size) */}
+        {/* Mobile Menu Button */}
         <button className="md:hidden text-gray-600 cursor-pointer text-3xl" onClick={() => setMenuOpen(!menuOpen)}>
           {menuOpen ? <FaTimes size={24} /> : <FaBars size={24} />}
         </button>
@@ -58,6 +58,15 @@ const NavLinks = ({ mobile, onClick, userInfo, totalQuantity, onLogout }) => (
   <div className={`flex flex-col md:flex-row ${mobile ? "space-y-4" : "space-x-6"}`}>
     {/* Cart Link */}
     <NavItem to="/cart" icon={<FaShoppingCart size={22} />} text={`Cart (${totalQuantity})`} onClick={onClick} />
+
+    {/* Admin Links - Only visible to admins */}
+    {userInfo?.isAdmin && (
+      <>
+        <NavItem to="/admin/orders" text="Orders" onClick={onClick} />
+        <NavItem to="/admin/products" text="Products" onClick={onClick} />
+        <NavItem to="/admin/users" text="Users" onClick={onClick} />
+      </>
+    )}
 
     {/* If user is logged in, show name, profile & logout */}
     {userInfo ? (

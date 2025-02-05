@@ -1,24 +1,22 @@
-import { useEffect } from "react";
+import { useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { useCreateOrderMutation, useGetMyOrdersQuery } from "../slices/ordersApiSlice"; // ✅ Import useGetMyOrdersQuery
+import { useCreateOrderMutation } from "../slices/ordersApiSlice";
 import { clearCart } from "../slices/cartSlice";
+import { apiSlice } from "../slices/apiSlice"; 
 
 const PlaceOrder = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-
-  // ✅ Get cart items from Redux store
   const { cartItems, totalPrice } = useSelector((state) => state.cart);
-
+  
   // ✅ Create order mutation
-  const [createOrder, { isLoading, isError, error, isSuccess, data }] = useCreateOrderMutation();
+  const [createOrder, { isLoading }] = useCreateOrderMutation();
+  const [errorMessage, setErrorMessage] = useState(null); // ✅ Store error message
 
-  // ✅ Get My Orders and Refetch Function
-  const { refetch } = useGetMyOrdersQuery(); // ✅ Import refetch function
-
-  // ✅ Handle order confirmation
   const handlePlaceOrder = async () => {
+    setErrorMessage(null); // ✅ Reset any previous errors
+
     try {
       const orderData = {
         orderItems: cartItems.map(item => ({
@@ -27,24 +25,32 @@ const PlaceOrder = () => {
           image: item.image,
           qty: item.quantity,
           price: item.price,
-          specifications: item.specifications || {}
+          specifications: item.specifications || {},
         })),
         shippingAddress: {
           address: "N/A",
           city: "N/A",
           postalCode: "N/A",
-          country: "N/A"
+          country: "N/A",
         },
-        totalPrice
+        totalPrice,
       };
 
-      const res = await createOrder(orderData).unwrap();
-      
-      dispatch(clearCart()); // ✅ Clear cart after order is placed
-      await refetch(); // ✅ Force refresh My Orders immediately
-      navigate(`/order-confirmation/${res._id}`); // ✅ Redirect to Order Confirmation
+      // ✅ Attempt to create the order in the backend
+      const newOrder = await createOrder(orderData).unwrap();
+
+      // ✅ Update Redux cache only if API call was successful
+      dispatch(
+        apiSlice.util.updateQueryData("getMyOrders", undefined, (draftOrders) => {
+          draftOrders.unshift(newOrder);
+        })
+      );
+
+      dispatch(clearCart()); // ✅ Clear cart after successful order placement
+      navigate(`/order-confirmation/${newOrder._id}`); // ✅ Redirect to confirmation page
     } catch (err) {
       console.error("Order placement failed:", err);
+      setErrorMessage(err?.data?.message || "An error occurred while placing your order."); // ✅ Set error message
     }
   };
 
@@ -52,9 +58,9 @@ const PlaceOrder = () => {
     <div className="container mx-auto px-4 py-10">
       <h2 className="text-2xl font-semibold mb-6 text-center">Review Your Order</h2>
 
-      {isError && <p className="text-red-500 text-center">{error?.data?.message || "Failed to place order"}</p>}
+      {/* ✅ Show error message if order placement fails */}
+      {errorMessage && <p className="text-red-500 text-center mb-4">{errorMessage}</p>}
 
-      {/* Order Items List */}
       <div className="bg-white p-6 shadow-sm rounded-md">
         {cartItems.length === 0 ? (
           <p className="text-center text-gray-500">Your cart is empty.</p>
@@ -72,7 +78,6 @@ const PlaceOrder = () => {
         )}
       </div>
 
-      {/* Order Summary */}
       <div className="bg-white p-6 shadow-sm mt-6 rounded-md">
         <h3 className="text-lg font-semibold text-gray-900 mb-3">Order Summary</h3>
         <div className="flex justify-between text-lg font-semibold text-gray-900">
@@ -81,7 +86,6 @@ const PlaceOrder = () => {
         </div>
       </div>
 
-      {/* Confirm Order Button */}
       <div className="flex justify-center mt-6">
         <button
           onClick={handlePlaceOrder}

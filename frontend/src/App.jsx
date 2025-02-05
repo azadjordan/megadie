@@ -7,13 +7,14 @@ import Login from "./pages/Login";
 import Product from "./pages/Product";
 import Register from "./pages/Register";
 import Profile from "./pages/Profile";
-import PlaceOrder from "./pages/PlaceOrder"; // ✅ Import Place Order Page
-import PrivateRoute from "./components/PrivateRoute"; // ✅ Import PrivateRoute
-import OrderConfirmation from "./pages/OrderConfirmation"; // ✅ Import Order Confirmation Page
+import PlaceOrder from "./pages/PlaceOrder";
+import PrivateRoute from "./components/PrivateRoute";
+import OrderConfirmation from "./pages/OrderConfirmation";
 import OrderDetails from "./pages/OrderDetails";
 import AccountDashboard from "./pages/AccountDashboard";
 import MyOrders from "./pages/MyOrders";
-
+import AdminRoute from "./components/AdminRoute";
+import OrderList from "./pages/OrderList";
 
 const App = () => {
   return (
@@ -34,11 +35,12 @@ const App = () => {
             </Route>
             <Route path="/place-order" element={<PlaceOrder />} />
             <Route path="/order/:id" element={<OrderDetails />} />
-            <Route
-              path="/order-confirmation/:orderId"
-              element={<OrderConfirmation />}
-            />{" "}
-            {/* ✅ Add this */}
+            <Route path="/order-confirmation/:orderId" element={<OrderConfirmation />} />
+          </Route>
+
+          {/* ✅ Admin Routes */}
+          <Route element={<AdminRoute />}>
+            <Route path="/admin/orders" element={<OrderList />} />
           </Route>
         </Routes>
       </main>
