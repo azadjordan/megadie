@@ -15,6 +15,10 @@ import AccountDashboard from "./pages/AccountDashboard";
 import MyOrders from "./pages/MyOrders";
 import AdminRoute from "./components/AdminRoute";
 import OrderList from "./pages/OrderList";
+import ProductList from "./pages/ProductList";
+import ProductEdit from "./pages/ProductEdit";
+import UserList from "./pages/UserList"; // ✅ Import User List Page
+import UserEdit from "./pages/UserEdit"; // ✅ Import User Edit Page
 
 const App = () => {
   return (
@@ -41,6 +45,10 @@ const App = () => {
           {/* ✅ Admin Routes */}
           <Route element={<AdminRoute />}>
             <Route path="/admin/orders" element={<OrderList />} />
+            <Route path="/admin/products" element={<ProductList />} />
+            <Route path="/admin/product/edit/:id" element={<ProductEdit />} />
+            <Route path="/admin/users" element={<UserList />} /> {/* ✅ New User List Route */}
+            <Route path="/admin/user/edit/:id" element={<UserEdit />} /> {/* ✅ New User Edit Route */}
           </Route>
         </Routes>
       </main>
