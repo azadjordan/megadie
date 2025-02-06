@@ -1,18 +1,19 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { useRegisterMutation } from "../slices/usersApiSlice";
 import { setCredentials } from "../slices/authSlice";
 
 const Register = () => {
-  const [name, setName] = useState("");
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [formData, setFormData] = useState({
+    name: "",
+    phoneNumber: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
 
-  const [errors, setErrors] = useState({}); // ✅ Stores field validation errors
-
+  const [errors, setErrors] = useState({});
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { userInfo } = useSelector((state) => state.auth);
@@ -24,32 +25,32 @@ const Register = () => {
     }
   }, [userInfo, navigate]);
 
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
   const submitHandler = async (e) => {
     e.preventDefault();
     let validationErrors = {};
 
-    // ✅ Check for empty fields
-    if (!name) validationErrors.name = "Name is required.";
-    if (!phoneNumber) validationErrors.phoneNumber = "Phone number is required.";
-    if (!email) validationErrors.email = "Email is required.";
-    if (!password) validationErrors.password = "Password is required.";
-    if (!confirmPassword) validationErrors.confirmPassword = "Confirm password is required.";
-
-    // ✅ Check if passwords match
-    if (password && confirmPassword && password !== confirmPassword) {
+    if (!formData.name) validationErrors.name = "Name is required.";
+    if (!formData.phoneNumber) validationErrors.phoneNumber = "Phone number is required.";
+    if (!formData.email) validationErrors.email = "Email is required.";
+    if (!formData.password) validationErrors.password = "Password is required.";
+    if (!formData.confirmPassword) validationErrors.confirmPassword = "Confirm password is required.";
+    if (formData.password !== formData.confirmPassword) {
       validationErrors.password = "Passwords do not match.";
       validationErrors.confirmPassword = "Passwords do not match.";
     }
 
-    // ✅ Set errors and prevent submission if there are any
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
       return;
     }
 
     try {
-      setErrors({}); // ✅ Clear previous validation errors
-      const res = await register({ name, phoneNumber, email, password }).unwrap();
+      setErrors({});
+      const res = await register(formData).unwrap();
       dispatch(setCredentials(res));
       navigate("/");
     } catch (err) {
@@ -58,97 +59,46 @@ const Register = () => {
   };
 
   return (
-    <div className="max-w-md mx-auto bg-white p-6 rounded-md shadow-md mt-12">
-      <h2 className="text-2xl font-semibold mb-4 text-center">Register</h2>
+    <div className="max-w-lg mx-auto px-6 py-12 bg-white shadow-md rounded-lg mt-[100px]">
+      <h2 className="text-3xl font-semibold text-center text-gray-800 mb-6">Create Account</h2>
 
-      {/* ✅ API Error Message */}
-      {errors.apiError && <p className="text-red-500 text-sm text-center">{errors.apiError}</p>}
+      {errors.apiError && <p className="text-red-500 text-center mb-4">{errors.apiError}</p>}
 
       <form onSubmit={submitHandler} className="space-y-4">
-        {/* ✅ Name Field */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Name</label>
-          <input
-            type="text"
-            placeholder="Enter your name"
-            className={`w-full p-2 border rounded-md cursor-text focus:outline-none focus:ring ${
-              errors.name ? "border-red-500 ring-red-200" : "border-gray-300 focus:ring-purple-200"
-            }`}
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
-          {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
-        </div>
+        {["name", "phoneNumber", "email", "password", "confirmPassword"].map((field, index) => (
+          <div key={index}>
+            <label className="block text-sm font-medium text-gray-700 capitalize">
+              {field.replace(/([A-Z])/g, " $1")}
+            </label>
+            <input
+              type={field.includes("password") ? "password" : "text"}
+              name={field}
+              placeholder={`Enter your ${field}`}
+              className={`w-full p-3 border rounded-md focus:ring focus:ring-purple-200 ${
+                errors[field] ? "border-red-500 ring-red-200" : "border-gray-300"
+              }`}
+              value={formData[field]}
+              onChange={handleChange}
+            />
+            {errors[field] && <p className="text-red-500 text-xs mt-1">{errors[field]}</p>}
+          </div>
+        ))}
 
-        {/* ✅ Phone Number Field */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Phone Number</label>
-          <input
-            type="tel"
-            placeholder="Enter your phone number"
-            className={`w-full p-2 border rounded-md cursor-text focus:outline-none focus:ring ${
-              errors.phoneNumber ? "border-red-500 ring-red-200" : "border-gray-300 focus:ring-purple-200"
-            }`}
-            value={phoneNumber}
-            onChange={(e) => setPhoneNumber(e.target.value)}
-          />
-          {errors.phoneNumber && <p className="text-red-500 text-xs mt-1">{errors.phoneNumber}</p>}
-        </div>
-
-        {/* ✅ Email Field */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Email</label>
-          <input
-            type="email"
-            placeholder="Enter your email"
-            className={`w-full p-2 border rounded-md cursor-text focus:outline-none focus:ring ${
-              errors.email ? "border-red-500 ring-red-200" : "border-gray-300 focus:ring-purple-200"
-            }`}
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
-        </div>
-
-        {/* ✅ Password Field */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Password</label>
-          <input
-            type="password"
-            placeholder="Enter your password"
-            className={`w-full p-2 border rounded-md cursor-text focus:outline-none focus:ring ${
-              errors.password ? "border-red-500 ring-red-200" : "border-gray-300 focus:ring-purple-200"
-            }`}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
-        </div>
-
-        {/* ✅ Confirm Password Field */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Confirm Password</label>
-          <input
-            type="password"
-            placeholder="Confirm your password"
-            className={`w-full p-2 border rounded-md cursor-text focus:outline-none focus:ring ${
-              errors.confirmPassword ? "border-red-500 ring-red-200" : "border-gray-300 focus:ring-purple-200"
-            }`}
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-          />
-          {errors.confirmPassword && <p className="text-red-500 text-xs mt-1">{errors.confirmPassword}</p>}
-        </div>
-
-        {/* ✅ Submit Button */}
         <button
           type="submit"
-          className="w-full bg-purple-500 text-white font-bold py-3 mt-4 rounded-md hover:bg-purple-600 transition cursor-pointer"
+          className="w-full bg-purple-500 text-white font-bold py-3 rounded-md hover:bg-purple-600 transition cursor-pointer"
           disabled={isLoading}
         >
           {isLoading ? "Registering..." : "Register"}
         </button>
       </form>
+
+      <p className="text-center text-sm text-gray-600 mt-4">
+        Already have an account?{" "}
+        <Link to="/login" className="text-blue-600 hover:underline">
+          Sign In
+        </Link>
+      </p>
     </div>
   );
 };

@@ -5,9 +5,8 @@ import { useLoginMutation } from "../slices/usersApiSlice";
 import { setCredentials } from "../slices/authSlice";
 
 const Login = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-
+  const [formData, setFormData] = useState({ email: "", password: "" });
+  const [errors, setErrors] = useState({});
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { userInfo } = useSelector((state) => state.auth);
@@ -19,49 +18,59 @@ const Login = () => {
     }
   }, [userInfo, navigate]);
 
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
   const submitHandler = async (e) => {
     e.preventDefault();
+    let validationErrors = {};
+
+    if (!formData.email) validationErrors.email = "Email is required.";
+    if (!formData.password) validationErrors.password = "Password is required.";
+
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
+
     try {
-      const res = await login({ email, password }).unwrap();
+      setErrors({});
+      const res = await login(formData).unwrap();
       dispatch(setCredentials(res));
       navigate("/");
     } catch (err) {
-      console.error("Login Failed:", err?.data?.message || err);
+      setErrors({ apiError: err?.data?.message || "Login failed." });
     }
   };
 
   return (
-    <div className="max-w-md mx-auto bg-white p-6 rounded-md shadow-md mt-12">
-      <h2 className="text-2xl font-semibold mb-4 text-center">Sign In</h2>
+    <div className="max-w-lg mx-auto px-6 py-12 bg-white shadow-md rounded-lg mt-[100px]">
+      <h2 className="text-3xl font-semibold text-center text-gray-800 mb-6">Sign In</h2>
 
-      {error && <p className="text-red-500 text-sm text-center">{error?.data?.message || "Login failed"}</p>}
+      {errors.apiError && <p className="text-red-500 text-center mb-4">{errors.apiError}</p>}
 
       <form onSubmit={submitHandler} className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Email</label>
-          <input
-            type="email"
-            placeholder="Enter your email"
-            className="w-full p-2 border border-gray-300 rounded-md cursor-text focus:outline-none focus:ring focus:ring-purple-200"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Password</label>
-          <input
-            type="password"
-            placeholder="Enter your password"
-            className="w-full p-2 border border-gray-300 rounded-md cursor-text focus:outline-none focus:ring focus:ring-purple-200"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-        </div>
+        {["email", "password"].map((field, index) => (
+          <div key={index}>
+            <label className="block text-sm font-medium text-gray-700 capitalize">{field}</label>
+            <input
+              type={field.includes("password") ? "password" : "text"}
+              name={field}
+              placeholder={`Enter your ${field}`}
+              className={`w-full p-3 border rounded-md focus:ring focus:ring-purple-200 ${
+                errors[field] ? "border-red-500 ring-red-200" : "border-gray-300"
+              }`}
+              value={formData[field]}
+              onChange={handleChange}
+            />
+            {errors[field] && <p className="text-red-500 text-xs mt-1">{errors[field]}</p>}
+          </div>
+        ))}
 
         <button
           type="submit"
-          className="w-full bg-purple-500 text-white font-bold py-3 mt-4 rounded-md hover:bg-purple-600 transition cursor-pointer"
+          className="w-full bg-purple-500 text-white font-bold py-3 rounded-md hover:bg-purple-600 transition cursor-pointer"
           disabled={isLoading}
         >
           {isLoading ? "Logging in..." : "Login"}
@@ -69,9 +78,9 @@ const Login = () => {
       </form>
 
       <p className="text-center text-sm text-gray-600 mt-4">
-        Not Registered?{" "}
-        <Link to="/register" className="text-blue-600 hover:underline cursor-pointer">
-          Register Now!
+        Not registered?{" "}
+        <Link to="/register" className="text-blue-600 hover:underline">
+          Register Now
         </Link>
       </p>
     </div>

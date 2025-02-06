@@ -1,22 +1,19 @@
 import dotenv from "dotenv";
-import path from "path";  // ✅ Ensure correct file path
+import path from "path";
 import { fileURLToPath } from "url";
-
-// ✅ Resolve the correct path to `.env`
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-dotenv.config({ path: path.resolve(__dirname, "../.env") });  // ✅ Explicitly load from root
-
 import mongoose from "mongoose";
-import connectDB from "./config/db.js";  // Ensure the correct path
+import connectDB from "./config/db.js";
 import Product from "./models/productModel.js";
 import User from "./models/userModel.js";
 
-console.log(`MONGO_URI from .env in seeder.js: ${process.env.MONGO_URI}`); // ✅ Debugging
+// Load environment variables
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+dotenv.config({ path: path.resolve(__dirname, "../.env") });
+
+console.log(`MONGO_URI from .env in seeder.js: ${process.env.MONGO_URI}`);
 
 connectDB();
-
 
 // Define categories and their dynamic specifications
 const categories = {
@@ -52,7 +49,7 @@ const categories = {
     }
 };
 
-// Function to generate random products
+// Function to generate random products with a random Picsum image
 const generateRandomProduct = () => {
     const category = Object.keys(categories)[Math.floor(Math.random() * Object.keys(categories).length)];
     const specs = Object.fromEntries(
@@ -66,22 +63,21 @@ const generateRandomProduct = () => {
         description: `This is a high-quality ${category.toLowerCase()} product.`,
         price: (Math.random() * (100 - 5) + 5).toFixed(2),
         qty: Math.floor(Math.random() * 50) + 1,
-        image: "/images/sample.jpg",
+        image: `https://picsum.photos/200/300?random=${Math.floor(Math.random() * 1000)}`, // ✅ Random Picsum image
         inStock: true,
         specifications: specs
     };
 };
 
-// Function to seed data
 const seedData = async () => {
     try {
+        await connectDB();  // ✅ Ensure connection is established first
         await Product.deleteMany();
         console.log("Products deleted!");
 
         await User.deleteMany();
         console.log("Users deleted!");
 
-        // Insert users and get an admin user
         const users = [
             { name: "Admin User", email: "admin@example.com", password: "123456", isAdmin: true },
             { name: "Test User", email: "user@example.com", password: "123456", isAdmin: false }
@@ -89,7 +85,6 @@ const seedData = async () => {
         const createdUsers = await User.insertMany(users);
         const adminUser = createdUsers.find(user => user.isAdmin)._id;
 
-        // Generate 30 random products
         const sampleProducts = Array.from({ length: 30 }, generateRandomProduct).map(product => ({
             ...product,
             user: adminUser
@@ -104,9 +99,9 @@ const seedData = async () => {
     }
 };
 
-// Function to destroy data
 const destroyData = async () => {
     try {
+        await connectDB();  // ✅ Ensure connection is established first
         await Product.deleteMany();
         await User.deleteMany();
         console.log("All data destroyed successfully!");
@@ -116,6 +111,7 @@ const destroyData = async () => {
         process.exit(1);
     }
 };
+
 
 if (process.argv[2] === "-d") {
     destroyData();

@@ -5,18 +5,18 @@ import { FaCheckCircle, FaTimesCircle, FaTruck } from "react-icons/fa";
 const MyOrders = () => {
   const { data: orders, isLoading, isError } = useGetMyOrdersQuery();
 
-  if (isLoading) return <p className="text-gray-500 text-center">Loading orders...</p>;
-  if (isError) return <p className="text-red-500 text-center">Failed to load orders.</p>;
+  if (isLoading) return <p className="text-gray-500 text-center py-10">Loading orders...</p>;
+  if (isError) return <p className="text-red-500 text-center py-10">Failed to load orders.</p>;
 
   return (
-    <div>
-      <h2 className="text-xl font-semibold mb-4">My Orders</h2>
+    <div className="container mx-auto px-6 py-12 pt-[80px]">
+      <h2 className="text-3xl font-bold text-center mb-6">My Orders</h2>
 
       {orders?.length > 0 ? (
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto bg-white p-6 shadow-md rounded-lg">
           <table className="w-full border border-gray-200">
             <thead>
-              <tr className="bg-gray-100">
+              <tr className="bg-purple-500 text-white text-left">
                 <th className="py-3 px-4 border">Order ID</th>
                 <th className="py-3 px-4 border">Date</th>
                 <th className="py-3 px-4 border">Total</th>
@@ -27,36 +27,62 @@ const MyOrders = () => {
             </thead>
             <tbody>
               {orders.map((order) => (
-                <tr key={order._id} className="border-b">
+                <tr key={order._id} className="border-b hover:bg-gray-50 transition">
                   <td className="py-3 px-4 border">
-                    <Link to={`/order/${order._id}`} className="text-blue-500 hover:underline">
-                      {order._id}
+                    <Link to={`/order/${order._id}`} className="text-purple-600 font-semibold hover:underline">
+                      {order._id.slice(0, 10)}...
                     </Link>
                   </td>
                   <td className="py-3 px-4 border">{new Date(order.createdAt).toLocaleDateString()}</td>
-                  <td className="py-3 px-4 border">${order.totalPrice.toFixed(2)}</td>
+                  <td className="py-3 px-4 border font-semibold">${order.totalPrice.toFixed(2)}</td>
+
+                  {/* Paid Status */}
                   <td className="py-3 px-4 border text-center">
                     {order.isPaid ? (
-                      <FaCheckCircle className="text-green-500 mx-auto" size={18} title="Paid" />
+                      <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-medium">
+                        Paid
+                      </span>
                     ) : (
-                      <FaTimesCircle className="text-red-500 mx-auto" size={18} title="Not Paid" />
+                      <span className="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs font-medium">
+                        Not Paid
+                      </span>
                     )}
                   </td>
+
+                  {/* Delivery Status */}
                   <td className="py-3 px-4 border text-center">
                     {order.isDelivered ? (
-                      <FaCheckCircle className="text-green-500 mx-auto" size={18} title="Delivered" />
+                      <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-medium">
+                        Delivered
+                      </span>
                     ) : (
-                      <FaTruck className="text-gray-500 mx-auto" size={18} title="Pending Delivery" />
+                      <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-xs font-medium">
+                        Pending
+                      </span>
                     )}
                   </td>
-                  <td className="py-3 px-4 border">{order.status || "Processing"}</td>
+
+                  {/* Order Status */}
+                  <td className="py-3 px-4 border">
+                    <span
+                      className={`px-3 py-1 rounded-full text-xs font-medium ${
+                        order.status === "Completed"
+                          ? "bg-green-100 text-green-700"
+                          : order.status === "Canceled"
+                          ? "bg-red-100 text-red-700"
+                          : "bg-yellow-100 text-yellow-700"
+                      }`}
+                    >
+                      {order.status || "Processing"}
+                    </span>
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
       ) : (
-        <p className="text-gray-500 text-center">You have no orders yet.</p>
+        <p className="text-gray-500 text-center mt-10">You have no orders yet.</p>
       )}
     </div>
   );

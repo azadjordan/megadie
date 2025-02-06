@@ -5,13 +5,12 @@ import { useState } from "react";
 
 const ProductList = () => {
   const navigate = useNavigate();
-  const { data: products, isLoading, error } = useGetProductsQuery();
+  const { data: products, isLoading, error, refetch } = useGetProductsQuery();
   const [addProduct, { isLoading: isAdding }] = useAddProductMutation();
   const [deleteProduct] = useDeleteProductMutation();
   const [deletingProductId, setDeletingProductId] = useState(null);
   const [message, setMessage] = useState("");
 
-  // Default product values
   const defaultProduct = {
     name: "New Product",
     source: "China",
@@ -24,7 +23,7 @@ const ProductList = () => {
     specifications: {},
   };
 
-  // Create new product and redirect to edit page
+  // ✅ Create a new product and redirect to edit page
   const createProductHandler = async () => {
     setMessage("Creating new product...");
     try {
@@ -36,12 +35,14 @@ const ProductList = () => {
     }
   };
 
+  // ✅ Delete product
   const deleteHandler = async (id) => {
     setMessage(`Deleting product ${id}...`);
     try {
       setDeletingProductId(id);
       await deleteProduct(id).unwrap();
       setMessage("Product deleted successfully.");
+      refetch(); // Refresh product list
     } catch (error) {
       setMessage("Failed to delete product.");
     } finally {
@@ -50,65 +51,61 @@ const ProductList = () => {
   };
 
   return (
-    <div className="container mx-auto p-6">
+    <div className="container mx-auto px-6 py-12 pt-[120px]">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Product List</h1>
+        <h1 className="text-3xl font-bold text-gray-800">Products</h1>
         <button
           onClick={createProductHandler}
           disabled={isAdding}
           className="bg-green-600 text-white px-4 py-2 rounded flex items-center gap-2 disabled:opacity-50"
         >
           <FaPlus />
-          {isAdding ? "Creating..." : "Create New Product"}
+          {isAdding ? "Creating..." : "Add New Product"}
         </button>
       </div>
 
-      {/* Display success/error messages */}
-      {message && <p className="mb-4 text-gray-700">{message}</p>}
+      {message && <p className="text-center text-purple-600">{message}</p>}
 
       {isLoading ? (
-        <p>Loading products...</p>
+        <p className="text-gray-500 text-center">Loading products...</p>
       ) : error ? (
-        <p className="text-red-500">Error fetching products</p>
+        <p className="text-red-500 text-center">Error fetching products.</p>
       ) : (
-        <div className="overflow-x-auto bg-white shadow-lg rounded-lg p-4">
-          <table className="w-full border-collapse">
-            <thead>
-              <tr className="bg-gray-200">
-                <th className="p-3 text-left">ID</th>
-                <th className="p-3 text-left">Name</th>
-                <th className="p-3 text-left">Price</th>
-                <th className="p-3 text-left">Actions</th>
+        <div className="overflow-x-auto bg-white p-6 shadow-md rounded-lg">
+          <table className="w-full border border-gray-200 text-left">
+            <thead className="bg-purple-500 text-white">
+              <tr>
+                <th className="py-4 px-6 w-1/3">Product Name</th>
+                <th className="py-4 px-6 w-1/6">Price</th>
+                <th className="py-4 px-6 w-1/6">Stock</th>
+                <th className="py-4 px-6 w-1/6">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {products
-                .slice() // Create a copy before sorting
-                .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)) // Sort newest first
-                .map((product) => (
-                  <tr key={product._id} className="border-b hover:bg-gray-100">
-                    <td className="p-3">{product._id}</td>
-                    <td className="p-3">{product.name}</td>
-                    <td className="p-3">${product.price}</td>
-                    <td className="p-3 flex space-x-4">
-                      <button
-                        onClick={() => navigate(`/admin/product/edit/${product._id}`)}
-                        className="text-blue-600 hover:text-blue-800 flex items-center gap-1"
-                      >
-                        <FaEdit />
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => deleteHandler(product._id)}
-                        disabled={deletingProductId === product._id}
-                        className="text-red-600 hover:text-red-800 flex items-center gap-1 disabled:opacity-50"
-                      >
-                        <FaTrash />
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+              {products.map((product) => (
+                <tr key={product._id} className="border-b hover:bg-gray-50 transition">
+                  <td className="py-4 px-6">{product.name}</td>
+                  <td className="py-4 px-6">${product.price.toFixed(2)}</td>
+                  <td className="py-4 px-6">{product.inStock ? "✅" : "❌"}</td>
+                  <td className="py-4 px-6 flex space-x-4">
+                    <button
+                      onClick={() => navigate(`/admin/product/edit/${product._id}`)}
+                      className="text-blue-600 hover:text-blue-800 flex items-center gap-1"
+                    >
+                      <FaEdit />
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => deleteHandler(product._id)}
+                      disabled={deletingProductId === product._id}
+                      className="text-red-600 hover:text-red-800 flex items-center gap-1 disabled:opacity-50"
+                    >
+                      <FaTrash />
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
