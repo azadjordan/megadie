@@ -12,6 +12,7 @@ const PlaceOrder = () => {
 
   const [createOrder, { isLoading }] = useCreateOrderMutation();
   const [errorMessage, setErrorMessage] = useState(null);
+  const [note, setNote] = useState(""); // ✅ State for the optional note
 
   const handlePlaceOrder = async () => {
     setErrorMessage(null);
@@ -26,13 +27,8 @@ const PlaceOrder = () => {
           price: item.price,
           specifications: item.specifications || {},
         })),
-        shippingAddress: {
-          address: "N/A",
-          city: "N/A",
-          postalCode: "N/A",
-          country: "N/A",
-        },
         totalPrice,
+        note, // ✅ Send note along with the order
       };
 
       const newOrder = await createOrder(orderData).unwrap();
@@ -83,6 +79,18 @@ const PlaceOrder = () => {
           <span>Total:</span>
           <span>${totalPrice.toFixed(2)}</span>
         </div>
+      </div>
+
+      {/* ✅ Order Note (Optional) */}
+      <div className="bg-white p-6 shadow-md mt-6 rounded-lg">
+        <h3 className="text-lg font-semibold text-gray-900 mb-3">Order Note (Optional)</h3>
+        <textarea
+          className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+          rows="3"
+          placeholder="Leave a note for your order (e.g., special instructions)..."
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+        />
       </div>
 
       {/* ✅ Place Order Button */}

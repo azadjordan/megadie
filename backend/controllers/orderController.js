@@ -5,7 +5,7 @@ import Order from "../models/orderModel.js";
 // @route   POST /api/orders
 // @access  Private (Logged-in users only)
 const createOrder = asyncHandler(async (req, res) => {
-    const { orderItems, shippingAddress, totalPrice } = req.body;
+    const { orderItems, totalPrice, note } = req.body;
 
     if (!orderItems || orderItems.length === 0) {
         res.status(400);
@@ -15,13 +15,15 @@ const createOrder = asyncHandler(async (req, res) => {
     const order = new Order({
         user: req.user._id,
         orderItems,
-        shippingAddress,
+        shippingAddress: req.user.address,
         totalPrice,
+        note, // ✅ Save note in database
     });
 
     const createdOrder = await order.save();
     res.status(201).json(createdOrder);
 });
+
 
 // @desc    Get order by ID (Owner/Admin)
 // @route   GET /api/orders/:id
@@ -48,9 +50,10 @@ const getOrderById = asyncHandler(async (req, res) => {
 // @route   GET /api/orders/myorders
 // @access  Private
 const getMyOrders = asyncHandler(async (req, res) => {
-    const orders = await Order.find({ user: req.user._id });
+    const orders = await Order.find({ user: req.user._id }).sort({ createdAt: -1 }); // ✅ Sort by newest first
     res.json(orders);
 });
+
 
 // @desc    Get all orders (Admin)
 // @route   GET /api/orders

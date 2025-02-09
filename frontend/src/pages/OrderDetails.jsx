@@ -1,12 +1,15 @@
 import { useParams } from "react-router-dom";
 import { useGetOrderByIdQuery, useUpdateOrderToPaidMutation, useUpdateOrderToDeliveredMutation } from "../slices/ordersApiSlice";
 import { useState } from "react";
+import { useSelector } from "react-redux";
 import { FaCheckCircle, FaTimesCircle, FaBox, FaTruck } from "react-icons/fa";
 
 const OrderDetails = () => {
   const { id: orderId } = useParams();
   const { data: order, isLoading, isError, refetch } = useGetOrderByIdQuery(orderId);
-
+  
+  const { userInfo } = useSelector((state) => state.auth); // ✅ Get user info from Redux
+  
   const [updateOrderToPaid, { isLoading: isPaying }] = useUpdateOrderToPaidMutation();
   const [updateOrderToDelivered, { isLoading: isDelivering }] = useUpdateOrderToDeliveredMutation();
   const [isProcessing, setIsProcessing] = useState(false);
@@ -51,10 +54,18 @@ const OrderDetails = () => {
         </p>
       </div>
 
+      {/* ✅ Always Display Order Note Section */}
+      <div className="bg-white p-6 shadow-md rounded-lg mb-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-3">Order Note</h3>
+        <p className="text-gray-700">
+          {order.note && order.note.trim() !== "" ? order.note : <span className="text-gray-500">No note provided</span>}
+        </p>
+      </div>
+
       {/* Shipping Address Section */}
       <div className="bg-white p-6 shadow-md rounded-lg mb-6">
         <h3 className="text-lg font-semibold mb-3">Shipping Address</h3>
-        <p>{order.shippingAddress.address}, {order.shippingAddress.city}, {order.shippingAddress.postalCode}, {order.shippingAddress.country}</p>
+        <p>{order.shippingAddress}</p>
       </div>
 
       {/* Order Items Section */}
@@ -72,8 +83,8 @@ const OrderDetails = () => {
         ))}
       </div>
 
-      {/* Admin Actions */}
-      {!order.isPaid || !order.isDelivered ? (
+      {/* ✅ Show Admin Actions Only for Admins */}
+      {userInfo?.isAdmin && (!order.isPaid || !order.isDelivered) && (
         <div className="bg-white p-6 shadow-md rounded-lg mt-6">
           <h3 className="text-lg font-semibold mb-3">Admin Actions</h3>
           <div className="flex flex-col space-y-3">
@@ -97,7 +108,7 @@ const OrderDetails = () => {
             )}
           </div>
         </div>
-      ) : null}
+      )}
     </div>
   );
 };

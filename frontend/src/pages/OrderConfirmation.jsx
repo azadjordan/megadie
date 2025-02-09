@@ -33,6 +33,14 @@ const OrderConfirmation = () => {
           <span>Total Price:</span>
           <span>${order.totalPrice.toFixed(2)}</span>
         </div>
+
+        {/* ✅ Display order note if it exists */}
+        {order.note && (
+          <div className="mt-4 p-4 bg-gray-100 rounded-md">
+            <h3 className="text-md font-semibold text-gray-700">Order Note:</h3>
+            <p className="text-gray-600">{order.note}</p>
+          </div>
+        )}
       </div>
     </div>
   );

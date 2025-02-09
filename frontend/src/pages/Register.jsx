@@ -34,10 +34,12 @@ const Register = () => {
     let validationErrors = {};
 
     if (!formData.name) validationErrors.name = "Name is required.";
-    if (!formData.phoneNumber) validationErrors.phoneNumber = "Phone number is required.";
+    if (!formData.phoneNumber)
+      validationErrors.phoneNumber = "Phone number is required.";
     if (!formData.email) validationErrors.email = "Email is required.";
     if (!formData.password) validationErrors.password = "Password is required.";
-    if (!formData.confirmPassword) validationErrors.confirmPassword = "Confirm password is required.";
+    if (!formData.confirmPassword)
+      validationErrors.confirmPassword = "Confirm password is required.";
     if (formData.password !== formData.confirmPassword) {
       validationErrors.password = "Passwords do not match.";
       validationErrors.confirmPassword = "Passwords do not match.";
@@ -60,29 +62,46 @@ const Register = () => {
 
   return (
     <div className="max-w-lg mx-auto px-6 py-12 bg-white shadow-md rounded-lg mt-[100px]">
-      <h2 className="text-3xl font-semibold text-center text-gray-800 mb-6">Create Account</h2>
+      <h2 className="text-3xl font-semibold text-center text-gray-800 mb-6">
+        Create Account
+      </h2>
 
-      {errors.apiError && <p className="text-red-500 text-center mb-4">{errors.apiError}</p>}
+      {errors.apiError && (
+        <p className="text-red-500 text-center mb-4">{errors.apiError}</p>
+      )}
 
       <form onSubmit={submitHandler} className="space-y-4">
-        {["name", "phoneNumber", "email", "password", "confirmPassword"].map((field, index) => (
-          <div key={index}>
-            <label className="block text-sm font-medium text-gray-700 capitalize">
-              {field.replace(/([A-Z])/g, " $1")}
-            </label>
-            <input
-              type={field.includes("password") ? "password" : "text"}
-              name={field}
-              placeholder={`Enter your ${field}`}
-              className={`w-full p-3 border rounded-md focus:ring focus:ring-purple-200 ${
-                errors[field] ? "border-red-500 ring-red-200" : "border-gray-300"
-              }`}
-              value={formData[field]}
-              onChange={handleChange}
-            />
-            {errors[field] && <p className="text-red-500 text-xs mt-1">{errors[field]}</p>}
-          </div>
-        ))}
+        {["name", "phoneNumber", "email", "password", "confirmPassword"].map(
+          (field, index) => (
+            <div key={index}>
+              <label className="block text-sm font-medium text-gray-700 capitalize">
+                {field.replace(/([A-Z])/g, " $1")}
+              </label>
+              <input
+                type={
+                  field === "password" || field === "confirmPassword"
+                    ? "password"
+                    : "text"
+                }
+                name={field}
+                placeholder={`Enter your ${field
+                  .replace(/([A-Z])/g, " $1")
+                  .toLowerCase()}`}
+                className={`w-full p-3 border rounded-md focus:ring focus:ring-purple-200 ${
+                  errors[field]
+                    ? "border-red-500 ring-red-200"
+                    : "border-gray-300"
+                }`}
+                value={formData[field]}
+                onChange={handleChange}
+              />
+
+              {errors[field] && (
+                <p className="text-red-500 text-xs mt-1">{errors[field]}</p>
+              )}
+            </div>
+          )
+        )}
 
         <button
           type="submit"
