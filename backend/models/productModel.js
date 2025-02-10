@@ -1,57 +1,26 @@
 import mongoose from "mongoose";
 
-const productSchema = new mongoose.Schema({
-    user: {
-        type: mongoose.Schema.Types.ObjectId,
-        required: true,
-        ref: "User",
-    },
-    name: {
-        type: String,
-        required: true,
-    },
-    source: {
-        type: String,
-        default: "China",
-    },
-    category: {
-        type: String,
-        required: true,
-        enum: ["Ribbons", "Tapes", "Creasing Channel", "Die Ejection Rubber", "Magnets", "Other"],
-    },
-    description: {
-        type: String,
-        required: true,
-    },
-    price: {
-        type: Number,
-        required: true,
-        default: 0,
-    },
-    qty: {
-        type: Number,
-        required: true,
-        default: 0,
-    },
-    image: {
-        type: String,
-        required: true,
-    },
-    inStock: {
-        type: Boolean,
-        required: true,
-        default: true,
-    },
-
-    // ✅ Dynamic specifications field (admin-defined key-value pairs)
-    specifications: {
-        type: Map,
-        of: String, // ✅ Allows storing { "Color": "Red", "Thickness": "2mm", "Hardness": "60 Shore A" }
-        default: {},
-    },
-
-}, { timestamps: true });
+const productSchema = new mongoose.Schema(
+  {
+    name: { type: String, required: true },
+    // ✅ Categorization
+    category: { type: String, required: true, index: true },
+    material: { type: String, required: false, index: true },
+    // ✅ Specifications
+    size: { type: String, required: false, index: true },
+    color: { type: String, required: false }, // Single color only
+    // ✅ Identification & Description
+    code: { type: String, required: false, unique: true, index: true },
+    description: { type: String, required: true },
+    // ✅ Image
+    image: { type: String, required: true },
+    // ✅ Pricing & Inventory
+    price: { type: Number, required: true },
+    stock: { type: Number, required: true, default: 0 }, // ✅ Tracks actual stock quantity
+    isAvailable: { type: Boolean, required: true, default: true }, // ✅ Admin can manually enable/disable product availability
+  },
+  { timestamps: true } // ✅ Auto-manages createdAt & updatedAt
+);
 
 const Product = mongoose.model("Product", productSchema);
-
 export default Product;

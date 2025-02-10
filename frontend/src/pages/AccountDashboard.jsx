@@ -2,9 +2,8 @@ import { Outlet, NavLink } from "react-router-dom";
 
 const AccountDashboard = () => {
   return (
-    <div className="container mx-auto px-6 py-12 pt-[80px] flex flex-col md:flex-row gap-8">
-      {/* ✅ Sidebar Navigation */}
-      <aside className="w-full md:w-1/4 bg-white p-6 rounded-lg shadow-md">
+    <div className="container mx-auto px-6 py-12 flex flex-col md:flex-row gap-8 mt-8">
+      <aside className="w-full md:w-1/4 bg-white p-6 rounded-lg shadow-md md:sticky md:top-20">
         <h3 className="text-xl font-bold mb-4">My Account</h3>
         <nav className="space-y-3">
           <NavLink
@@ -29,8 +28,6 @@ const AccountDashboard = () => {
           </NavLink>
         </nav>
       </aside>
-
-      {/* ✅ Right Content (Profile or Orders) */}
       <div className="w-full md:w-3/4 bg-white p-8 rounded-lg shadow-md">
         <Outlet />
       </div>

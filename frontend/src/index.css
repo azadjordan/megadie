@@ -1,14 +1,1 @@
 @import "tailwindcss";
-
-:root {
-    --brand-color: #9C6DA5;
-  }
-  
-  .bg-brandColor {
-    background-color: var(--brand-color);
-  }
-  
-  .text-brandColor {
-    color: var(--brand-color);
-  }
-  

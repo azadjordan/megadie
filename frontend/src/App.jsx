@@ -2,6 +2,7 @@ import { Route, Routes } from "react-router-dom";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import Home from "./pages/Home";
+import Shop from "./pages/Shop"; // ✅ Import the new Shop page
 import Cart from "./pages/Cart";
 import Login from "./pages/Login";
 import Product from "./pages/Product";
@@ -24,14 +25,16 @@ const App = () => {
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       <Header />
+
       <main className="container mx-auto flex-grow">
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/shop" element={<Shop />} />{" "}
+          {/* ✅ New Route for Shop */}
           <Route path="/cart" element={<Cart />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/product/:id" element={<Product />} />
-
           <Route element={<PrivateRoute />}>
             <Route path="/account" element={<AccountDashboard />}>
               <Route path="profile" element={<Profile />} />
@@ -39,16 +42,20 @@ const App = () => {
             </Route>
             <Route path="/place-order" element={<PlaceOrder />} />
             <Route path="/order/:id" element={<OrderDetails />} />
-            <Route path="/order-confirmation/:orderId" element={<OrderConfirmation />} />
+            <Route
+              path="/order-confirmation/:orderId"
+              element={<OrderConfirmation />}
+            />
           </Route>
-
           {/* ✅ Admin Routes */}
           <Route element={<AdminRoute />}>
             <Route path="/admin/orders" element={<OrderList />} />
             <Route path="/admin/products" element={<ProductList />} />
             <Route path="/admin/product/edit/:id" element={<ProductEdit />} />
-            <Route path="/admin/users" element={<UserList />} /> {/* ✅ New User List Route */}
-            <Route path="/admin/user/edit/:id" element={<UserEdit />} /> {/* ✅ New User Edit Route */}
+            <Route path="/admin/users" element={<UserList />} />{" "}
+            {/* ✅ New User List Route */}
+            <Route path="/admin/user/edit/:id" element={<UserEdit />} />{" "}
+            {/* ✅ New User Edit Route */}
           </Route>
         </Routes>
       </main>

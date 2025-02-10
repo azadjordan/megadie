@@ -28,18 +28,18 @@ const Product = () => {
   }
 
   return (
-    <div className="container mx-auto py-12 px-6 pt-[80px]"> {/* ✅ Fix: Added 'pt-[80px]' to offset the header */}
-      {/* ✅ Back Button */}
+    <div className="container mx-auto py-12 px-6 pt-[80px]">
+      {/* ✅ Back to Shop Button */}
       <Link
-        to="/"
+        to="/shop"
         className="inline-block bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300 transition mb-6"
       >
-        ← Back to Products
+        ← Back to Shop
       </Link>
 
       {/* ✅ Product Layout */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-        {/* ✅ Product Image */}
+        {/* ✅ Product Image with Hover */}
         <div className="relative overflow-hidden">
           <img
             src={product?.image}
