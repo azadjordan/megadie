@@ -3,6 +3,25 @@ import { ORDERS_URL } from "../constants";
 
 export const ordersApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
+    // ✅ Update Order Status (Admin)
+    updateOrderStatus: builder.mutation({
+      query: ({ orderId, status }) => ({
+        url: `${ORDERS_URL}/${orderId}/status`,
+        method: "PUT",
+        body: { status },
+        credentials: "include",
+      }),
+      invalidatesTags: ["Order"],
+    }),
+    // ✅ Toggle order payment status (Admin)
+    toggleOrderPaymentStatus: builder.mutation({
+      query: (orderId) => ({
+        url: `${ORDERS_URL}/${orderId}/toggle-pay`,
+        method: "PUT",
+        credentials: "include",
+      }),
+      invalidatesTags: ["Order"],
+    }),
     // ✅ Create a new order
     createOrder: builder.mutation({
       query: (data) => ({
@@ -46,34 +65,14 @@ export const ordersApiSlice = apiSlice.injectEndpoints({
       providesTags: ["Orders"],
       keepUnusedDataFor: 120, // ✅ Keeps admin OrderList cached for 2 minutes
     }),
-
-    // ✅ Update order to paid
-    updateOrderToPaid: builder.mutation({
-      query: (orderId) => ({
-        url: `${ORDERS_URL}/${orderId}/pay`,
-        method: "PUT",
-        credentials: "include",
-      }),
-      invalidatesTags: ["Order"],
-    }),
-
-    // ✅ Update order to delivered
-    updateOrderToDelivered: builder.mutation({
-      query: (orderId) => ({
-        url: `${ORDERS_URL}/${orderId}/deliver`,
-        method: "PUT",
-        credentials: "include",
-      }),
-      invalidatesTags: ["Order"],
-    }),
   }),
 });
 
-export const { 
-  useCreateOrderMutation, 
-  useGetOrderByIdQuery, 
-  useGetMyOrdersQuery, 
-  useGetAllOrdersQuery, 
-  useUpdateOrderToPaidMutation, 
-  useUpdateOrderToDeliveredMutation 
+export const {
+  useCreateOrderMutation,
+  useGetOrderByIdQuery,
+  useGetMyOrdersQuery,
+  useGetAllOrdersQuery,
+  useToggleOrderPaymentStatusMutation,
+  useUpdateOrderStatusMutation,
 } = ordersApiSlice;

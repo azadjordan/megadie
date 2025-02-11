@@ -63,20 +63,20 @@ const getAllOrders = asyncHandler(async (req, res) => {
     res.json(orders);
 });
 
-// @desc    Update order to paid (Admin only)
-// @route   PUT /api/orders/:id/pay
+// @desc    Toggle order payment status (Admin only)
+// @route   PUT /api/orders/:id/toggle-pay
 // @access  Private/Admin
-const updateOrderToPaid = asyncHandler(async (req, res) => {
+const toggleOrderPaymentStatus = asyncHandler(async (req, res) => {
     if (!req.user.isAdmin) {
-        res.status(403); // ✅ Return "Forbidden" if user is not an admin
+        res.status(403);
         throw new Error("Not authorized to update payment status");
     }
 
     const order = await Order.findById(req.params.id);
 
     if (order) {
-        order.isPaid = true;
-        order.paidAt = Date.now();
+        order.isPaid = !order.isPaid; // Toggle payment status
+        order.paidAt = order.isPaid ? Date.now() : null; // Set or clear payment date
 
         const updatedOrder = await order.save();
         res.json(updatedOrder);
@@ -86,24 +86,26 @@ const updateOrderToPaid = asyncHandler(async (req, res) => {
     }
 });
 
-
-// @desc    Update order to delivered (Admin)
-// @route   PUT /api/orders/:id/deliver
+// @desc    Update order status (Admin only)
+// @route   PUT /api/orders/:id/status
 // @access  Private/Admin
-const updateOrderToDelivered = asyncHandler(async (req, res) => {
+const updateOrderStatus = asyncHandler(async (req, res) => {
+    if (!req.user.isAdmin) {
+        res.status(403);
+        throw new Error("Not authorized to update order status");
+    }
+
     const order = await Order.findById(req.params.id);
 
-    if (order) {
-        order.isDelivered = true;
-        order.deliveredAt = Date.now();
-        order.status = "Delivered";
-
-        const updatedOrder = await order.save();
-        res.json(updatedOrder);
-    } else {
+    if (!order) {
         res.status(404);
         throw new Error("Order not found");
     }
+
+    order.status = req.body.status || order.status; // Update status if provided
+
+    const updatedOrder = await order.save();
+    res.json(updatedOrder);
 });
 
 export { 
@@ -111,6 +113,6 @@ export {
     getOrderById, 
     getMyOrders, 
     getAllOrders, 
-    updateOrderToPaid, 
-    updateOrderToDelivered 
+    toggleOrderPaymentStatus,
+    updateOrderStatus 
 };
