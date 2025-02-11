@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useCreateOrderMutation } from "../slices/ordersApiSlice";
 import { clearCart } from "../slices/cartSlice";
 import { apiSlice } from "../slices/apiSlice";
@@ -12,11 +12,10 @@ const PlaceOrder = () => {
 
   const [createOrder, { isLoading }] = useCreateOrderMutation();
   const [errorMessage, setErrorMessage] = useState(null);
-  const [note, setNote] = useState(""); // ✅ State for the optional note
+  const [note, setNote] = useState("");
 
   const handlePlaceOrder = async () => {
     setErrorMessage(null);
-
     try {
       const orderData = {
         orderItems: cartItems.map((item) => ({
@@ -28,7 +27,7 @@ const PlaceOrder = () => {
           specifications: item.specifications || {},
         })),
         totalPrice,
-        note, // ✅ Send note along with the order
+        note,
       };
 
       const newOrder = await createOrder(orderData).unwrap();
@@ -51,7 +50,7 @@ const PlaceOrder = () => {
     <div className="container mx-auto px-6 py-12 pt-[80px]">
       <h2 className="text-3xl font-bold text-center mb-6">Review Your Order</h2>
 
-      {/* ✅ Show error message if order placement fails */}
+      {/* ✅ Error Message */}
       {errorMessage && <p className="text-red-500 text-center mb-4">{errorMessage}</p>}
 
       {/* ✅ Order Items */}
@@ -75,7 +74,7 @@ const PlaceOrder = () => {
       {/* ✅ Order Summary */}
       <div className="bg-white p-6 shadow-md mt-6 rounded-lg">
         <h3 className="text-lg font-semibold text-gray-900 mb-3">Order Summary</h3>
-        <div className="flex justify-between text-2xl font-bold text-purple-600">
+        <div className="flex justify-between text-3xl font-bold text-purple-600">
           <span>Total:</span>
           <span>${totalPrice.toFixed(2)}</span>
         </div>
@@ -93,8 +92,17 @@ const PlaceOrder = () => {
         />
       </div>
 
-      {/* ✅ Place Order Button */}
-      <div className="flex justify-center mt-6">
+      {/* ✅ Buttons Section */}
+      <div className="flex flex-col md:flex-row justify-center md:justify-between items-center gap-4 mt-6">
+        {/* ✅ Back to Cart Button */}
+        <Link
+          to="/cart"
+          className="w-full md:w-auto bg-gray-300 text-gray-900 px-6 py-3 rounded-lg font-semibold hover:bg-gray-400 transition text-center"
+        >
+          ← Back to Cart
+        </Link>
+
+        {/* ✅ Place Order Button */}
         <button
           onClick={handlePlaceOrder}
           className="w-full md:w-auto bg-purple-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-purple-600 transition"
