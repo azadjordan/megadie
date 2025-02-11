@@ -39,7 +39,7 @@ const OrderActions = ({ orderId, currentStatus, isPaid, refetch }) => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* ✅ Status Selection */}
                 <div>
-                    <h4 className="text-md font-medium mb-2">Update Status</h4>
+                    <h4 className="text-md font-medium mb-2">Order Status</h4>
                     <select
                         value={selectedStatus}
                         onChange={(e) => handleStatusChange(e.target.value)}

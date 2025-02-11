@@ -30,7 +30,7 @@ const MyOrders = () => {
               onChange={() => setShowUnpaidOnly(!showUnpaidOnly)}
               className="hidden"
             />
-            <div className={`w-10 h-5 flex items-center bg-gray-300 rounded-full p-1 transition-all ${showUnpaidOnly ? "bg-purple-500" : ""}`}>
+            <div className={`w-10 h-5 flex items-center bg-gray-300 rounded-full p-0.5 transition-all ${showUnpaidOnly ? "bg-purple-500" : ""}`}>
               <div className={`bg-white w-4 h-4 rounded-full shadow-md transform transition-all ${showUnpaidOnly ? "translate-x-5" : ""}`}></div>
             </div>
           </label>
