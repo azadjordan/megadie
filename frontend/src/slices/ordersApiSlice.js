@@ -65,6 +65,25 @@ export const ordersApiSlice = apiSlice.injectEndpoints({
       providesTags: ["Orders"],
       keepUnusedDataFor: 120, // ✅ Keeps admin OrderList cached for 2 minutes
     }),
+    // ✅ Deduct Stock (Admin)
+    deductStock: builder.mutation({
+      query: (orderId) => ({
+        url: `${ORDERS_URL}/${orderId}/deduct-stock`,
+        method: "POST",
+        credentials: "include",
+      }),
+      invalidatesTags: ["Order"],
+    }),
+
+    // ✅ Restore Stock (Admin)
+    restoreStock: builder.mutation({
+      query: (orderId) => ({
+        url: `${ORDERS_URL}/${orderId}/restore-stock`,
+        method: "POST",
+        credentials: "include",
+      }),
+      invalidatesTags: ["Order"],
+    }),
   }),
 });
 
@@ -75,4 +94,6 @@ export const {
   useGetAllOrdersQuery,
   useToggleOrderPaymentStatusMutation,
   useUpdateOrderStatusMutation,
+  useDeductStockMutation,
+  useRestoreStockMutation,
 } = ordersApiSlice;

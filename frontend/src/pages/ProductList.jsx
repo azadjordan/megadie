@@ -13,14 +13,16 @@ const ProductList = () => {
 
   const defaultProduct = {
     name: "New Product",
-    source: "China",
     category: "Other",
+    material: "Unknown",
+    size: "N/A",
+    color: "N/A",
+    code: `P-${Date.now()}`,
     description: "Default description",
     price: 0,
-    qty: 0,
+    stock: 0,
     image: "https://via.placeholder.com/150",
-    inStock: true,
-    specifications: {},
+    isAvailable: true,
   };
 
   // ✅ Create a new product and redirect to edit page
@@ -75,18 +77,36 @@ const ProductList = () => {
           <table className="w-full border border-gray-200 text-left">
             <thead className="bg-purple-500 text-white">
               <tr>
-                <th className="py-4 px-6 w-1/3">Product Name</th>
-                <th className="py-4 px-6 w-1/6">Price</th>
-                <th className="py-4 px-6 w-1/6">Stock</th>
-                <th className="py-4 px-6 w-1/6">Actions</th>
+                <th className="py-4 px-6">Image</th>
+                <th className="py-4 px-6">Name</th>
+                <th className="py-4 px-6">Category</th>
+                <th className="py-4 px-6">Material</th>
+                <th className="py-4 px-6">Size</th>
+                <th className="py-4 px-6">Color</th>
+                <th className="py-4 px-6">Code</th>
+                <th className="py-4 px-6">Description</th>
+                <th className="py-4 px-6">Price</th>
+                <th className="py-4 px-6">Stock</th>
+                <th className="py-4 px-6">Available</th>
+                <th className="py-4 px-6">Actions</th>
               </tr>
             </thead>
             <tbody>
               {products.map((product) => (
                 <tr key={product._id} className="border-b hover:bg-gray-50 transition">
+                  <td className="py-4 px-6">
+                    <img src={product.image} alt={product.name} className="w-16 h-16 object-cover rounded-md" />
+                  </td>
                   <td className="py-4 px-6">{product.name}</td>
+                  <td className="py-4 px-6">{product.category}</td>
+                  <td className="py-4 px-6">{product.material || "N/A"}</td>
+                  <td className="py-4 px-6">{product.size || "N/A"}</td>
+                  <td className="py-4 px-6">{product.color || "N/A"}</td>
+                  <td className="py-4 px-6">{product.code || "N/A"}</td>
+                  <td className="py-4 px-6">{product.description}</td>
                   <td className="py-4 px-6">${product.price.toFixed(2)}</td>
-                  <td className="py-4 px-6">{product.inStock ? "✅" : "❌"}</td>
+                  <td className="py-4 px-6">{product.stock}</td>
+                  <td className="py-4 px-6">{product.isAvailable ? "✅" : "❌"}</td>
                   <td className="py-4 px-6 flex space-x-4">
                     <button
                       onClick={() => navigate(`/admin/product/edit/${product._id}`)}

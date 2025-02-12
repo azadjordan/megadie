@@ -81,11 +81,13 @@ const OrderDetails = () => {
             {/* ✅ Admin Actions (Separated Component) */}
             {userInfo?.isAdmin && (
                 <OrderActions 
-                    orderId={orderId} 
-                    currentStatus={order.status} 
-                    isPaid={order.isPaid} 
-                    refetch={refetch} 
-                />
+                orderId={orderId} 
+                stockUpdated={order.stockUpdated}  // ✅ Ensure this is passed correctly
+                currentStatus={order.status} 
+                isPaid={order.isPaid} 
+                refetch={refetch} 
+            />
+            
             )}
         </div>
     );

@@ -24,6 +24,7 @@ const orderSchema = new mongoose.Schema({
     deliveredAt: { type: Date },
     status: { type: String, enum: ["Pending", "Processing", "Shipped", "Delivered", "Cancelled"], default: "Pending" },
     note: { type: String, default: "" }, // ✅ Store optional note
+    stockUpdated: { type: Boolean, required: true, default: false }, // ✅ New field to track stock updates
 }, { timestamps: true });
 
 const Order = mongoose.model("Order", orderSchema);
