@@ -1,4 +1,8 @@
-import { useGetProductsQuery, useAddProductMutation, useDeleteProductMutation } from "../slices/productsApiSlice";
+import { 
+  useGetProductsQuery, 
+  useAddProductMutation, 
+  useDeleteProductMutation 
+} from "../slices/productsApiSlice";
 import { useNavigate } from "react-router-dom";
 import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
 import { useState } from "react";
@@ -18,7 +22,6 @@ const ProductList = () => {
     size: "N/A",
     color: "N/A",
     code: `P-${Date.now()}`,
-    description: "Default description",
     price: 0,
     stock: 0,
     image: "https://via.placeholder.com/150",
@@ -53,7 +56,7 @@ const ProductList = () => {
   };
 
   return (
-    <div className="container mx-auto px-6 py-12 pt-[120px]">
+    <div className="container mx-auto px-6 py-12 ">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-gray-800">Products</h1>
         <button
@@ -75,6 +78,7 @@ const ProductList = () => {
       ) : (
         <div className="overflow-x-auto bg-white p-6 shadow-md rounded-lg">
           <table className="w-full border border-gray-200 text-left">
+            {/* ✅ Updated Table Header (Removed Description) */}
             <thead className="bg-purple-500 text-white">
               <tr>
                 <th className="py-4 px-6">Image</th>
@@ -84,13 +88,13 @@ const ProductList = () => {
                 <th className="py-4 px-6">Size</th>
                 <th className="py-4 px-6">Color</th>
                 <th className="py-4 px-6">Code</th>
-                <th className="py-4 px-6">Description</th>
-                <th className="py-4 px-6">Price</th>
-                <th className="py-4 px-6">Stock</th>
-                <th className="py-4 px-6">Available</th>
+                <th className="py-4 px-6 text-center">Price</th>
+                <th className="py-4 px-6 text-center">Stock</th>
+                <th className="py-4 px-6 text-center">Available</th>
                 <th className="py-4 px-6">Actions</th>
               </tr>
             </thead>
+            {/* ✅ Updated Table Body (Aligned Numeric Data to Center) */}
             <tbody>
               {products.map((product) => (
                 <tr key={product._id} className="border-b hover:bg-gray-50 transition">
@@ -103,10 +107,9 @@ const ProductList = () => {
                   <td className="py-4 px-6">{product.size || "N/A"}</td>
                   <td className="py-4 px-6">{product.color || "N/A"}</td>
                   <td className="py-4 px-6">{product.code || "N/A"}</td>
-                  <td className="py-4 px-6">{product.description}</td>
-                  <td className="py-4 px-6">${product.price.toFixed(2)}</td>
-                  <td className="py-4 px-6">{product.stock}</td>
-                  <td className="py-4 px-6">{product.isAvailable ? "✅" : "❌"}</td>
+                  <td className="py-4 px-6 text-center">${product.price.toFixed(2)}</td>
+                  <td className="py-4 px-6 text-center">{product.stock}</td>
+                  <td className="py-4 px-6 text-center">{product.isAvailable ? "✅" : "❌"}</td>
                   <td className="py-4 px-6 flex space-x-4">
                     <button
                       onClick={() => navigate(`/admin/product/edit/${product._id}`)}

@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useGetAllOrdersQuery } from "../slices/ordersApiSlice";
-import { FaCheckCircle, FaTimesCircle, FaTruck, FaBox, FaClipboardList } from "react-icons/fa";
+import { FaCheckCircle, FaTimesCircle, FaClipboardList } from "react-icons/fa";
 
 const OrderList = () => {
   const navigate = useNavigate();
@@ -18,7 +18,7 @@ const OrderList = () => {
       {isLoading && <p className="text-gray-500 text-center py-10">Loading orders...</p>}
       {isError && <p className="text-red-500 text-center py-10">Failed to load orders.</p>}
 
-      {/* ✅ Table: More Details & Better UX */}
+      {/* ✅ Table: Clean & Readable */}
       {sortedOrders.length > 0 ? (
         <div className="overflow-x-auto bg-white p-6 shadow-md rounded-lg">
           <table className="w-full border border-gray-200 text-left">
@@ -30,7 +30,6 @@ const OrderList = () => {
                 <th className="py-4 px-6">Status</th>
                 <th className="py-4 px-6 text-center">Paid</th>
                 <th className="py-4 px-6 text-center">Stock Updated</th>
-                <th className="py-4 px-6 text-center">Delivered</th>
                 <th className="py-4 px-6">Date</th>
               </tr>
             </thead>
@@ -74,13 +73,6 @@ const OrderList = () => {
                     {order.stockUpdated 
                       ? <FaCheckCircle className="text-blue-500 mx-auto" /> 
                       : <FaTimesCircle className="text-gray-500 mx-auto" />}
-                  </td>
-
-                  {/* ✅ Delivered Status */}
-                  <td className="py-4 px-6 text-center">
-                    {order.isDelivered 
-                      ? <FaBox className="text-green-500 mx-auto" /> 
-                      : <FaTruck className="text-gray-500 mx-auto" />}
                   </td>
 
                   {/* ✅ Order Date */}

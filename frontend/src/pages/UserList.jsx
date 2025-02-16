@@ -1,6 +1,5 @@
 import { useGetUsersQuery, useDeleteUserMutation } from "../slices/usersApiSlice";
 import { useNavigate } from "react-router-dom";
-import { FaEdit, FaTrash } from "react-icons/fa";
 import { useState } from "react";
 
 const UserList = () => {
@@ -25,8 +24,11 @@ const UserList = () => {
   };
 
   return (
-    <div className="container mx-auto px-6 py-12 pt-[120px]">
-      <h1 className="text-3xl font-bold text-center mb-6">User List</h1>
+    <div className="container mx-auto px-6 py-12">
+      {/* ✅ Section Header */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6 mt-4 gap-4">
+        <h2 className="text-3xl font-bold">User List</h2>
+      </div>
 
       {message && <p className="text-center text-purple-600">{message}</p>}
 
@@ -35,55 +37,61 @@ const UserList = () => {
       ) : error ? (
         <p className="text-red-500 text-center">Error fetching users.</p>
       ) : (
-        <div className="overflow-x-auto bg-white p-6 shadow-md rounded-lg">
-          <table className="w-full border border-gray-200 text-left">
-            <thead className="bg-purple-500 text-white">
-              <tr>
-                <th className="py-4 px-6 w-1/4">ID</th>
-                <th className="py-4 px-6 w-1/4">Name</th>
-                <th className="py-4 px-6 w-1/4">Email</th>
-                <th className="py-4 px-6 w-1/6">Role</th>
-                <th className="py-4 px-6 w-1/6">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.map((user) => (
-                <tr key={user._id} className="border-b hover:bg-gray-50 transition">
-                  <td className="py-4 px-6">{user._id.slice(0, 10)}...</td>
-                  <td className="py-4 px-6">{user.name}</td>
-                  <td className="py-4 px-6">{user.email}</td>
-                  <td className="py-4 px-6">
-                    <span
-                      className={`px-3 py-1 rounded-full text-xs font-medium ${
-                        user.isAdmin ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-700"
-                      }`}
-                    >
-                      {user.isAdmin ? "Admin" : "User"}
-                    </span>
-                  </td>
-                  <td className="py-4 px-6 flex space-x-4">
-                    <button
-                      onClick={() => navigate(`/admin/user/edit/${user._id}`)}
-                      className="text-blue-600 hover:text-blue-800 flex items-center gap-1"
-                    >
-                      <FaEdit />
-                      Edit
-                    </button>
-                    {!user.isAdmin && (
-                      <button
-                        onClick={() => deleteHandler(user._id)}
-                        disabled={deletingUserId === user._id}
-                        className="text-red-600 hover:text-red-800 flex items-center gap-1 disabled:opacity-50"
-                      >
-                        <FaTrash />
-                        Delete
-                      </button>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="bg-white shadow-md rounded-lg overflow-hidden">
+          {/* ✅ Table Header */}
+          <div className="grid grid-cols-6 bg-gray-100 text-gray-700 font-medium py-3 px-4">
+            <span>ID</span>
+            <span>Name</span>
+            <span>Email</span>
+            <span>Wallet</span>
+            <span>Debt</span>
+            <span>Role</span>
+          </div>
+
+          {/* ✅ Users List (Clickable Rows) */}
+          <div>
+            {users.map((user) => (
+              <div
+                key={user._id}
+                onClick={() => navigate(`/admin/user/${user._id}`)} // ✅ Click entire row to navigate
+                className="grid grid-cols-6 py-4 px-4 border-b border-gray-200 hover:bg-gray-50 transition cursor-pointer items-center"
+              >
+                {/* ✅ User ID */}
+                <span className="text-purple-600 font-semibold">{user._id.slice(0, 10)}...</span>
+
+                {/* ✅ Name */}
+                <span className="text-gray-800">{user.name}</span>
+
+                {/* ✅ Email */}
+                <span className="text-gray-600 truncate">{user.email}</span>
+
+                {/* ✅ Wallet (Styled Value Box) */}
+                <div className="w-fit">
+                  <span className="inline-block px-3 py-1 text-sm font-medium rounded-full bg-green-100 text-green-700">
+                    ${user.wallet.toFixed(2)}
+                  </span>
+                </div>
+
+                {/* ✅ Outstanding Balance (Styled Value Box) */}
+                <div className="w-fit">
+                  <span className="inline-block px-3 py-1 text-sm font-medium rounded-full bg-red-100 text-red-700">
+                    ${user.outstandingBalance.toFixed(2)}
+                  </span>
+                </div>
+
+                {/* ✅ Role (Styled Badge) */}
+                <div className="w-fit">
+                  <span
+                    className={`inline-block px-3 py-1 text-sm font-medium rounded-full ${
+                      user.isAdmin ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-700"
+                    }`}
+                  >
+                    {user.isAdmin ? "Admin" : "User"}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>

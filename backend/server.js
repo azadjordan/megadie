@@ -9,6 +9,7 @@ const port = process.env.PORT;
 import productRoutes from "./routes/productRoutes.js";
 import userRoutes from "./routes/userRoutes.js"; // ✅ Import user routes
 import orderRoutes from "./routes/orderRoutes.js";
+import paymentRoutes from "./routes/paymentRoutes.js"
 
 import { notFound, errorHandler } from "./middleware/errorMiddleware.js";
 
@@ -44,6 +45,7 @@ app.get("/", (req, res) => {
 app.use("/api/products", productRoutes);
 app.use("/api/users", userRoutes); // ✅ Add User Routes
 app.use("/api/orders", orderRoutes);
+app.use("/api/payments", paymentRoutes);
 
 
 // Error Handling Middleware

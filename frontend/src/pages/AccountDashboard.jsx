@@ -2,37 +2,37 @@ import { Outlet, NavLink } from "react-router-dom";
 
 const AccountDashboard = () => {
   return (
-    <div className="container mx-auto px-6 py-12 flex flex-col md:flex-row gap-8 mt-8">
-      <aside className="w-full md:w-1/4 bg-white p-6 rounded-lg shadow-md md:sticky md:top-20">
-        <h3 className="text-xl font-bold mb-4">My Account</h3>
-        <nav className="space-y-3">
-          <NavLink
-            to="/account/profile"
-            className={({ isActive }) =>
-              `block p-3 rounded-lg font-medium transition ${
-                isActive ? "bg-purple-500 text-white" : "text-gray-700 hover:bg-gray-100"
-              }`
-            }
-          >
-            Profile
-          </NavLink>
-          <NavLink
-            to="/account/orders"
-            className={({ isActive }) =>
-              `block p-3 rounded-lg font-medium transition ${
-                isActive ? "bg-purple-500 text-white" : "text-gray-700 hover:bg-gray-100"
-              }`
-            }
-          >
-            My Orders
-          </NavLink>
+    <div className="container mx-auto flex flex-col md:flex-row gap-8 min-h-screen py-10">
+      {/* ✅ Sidebar Panel */}
+      <aside className="w-full md:w-1/4 bg-white rounded-lg shadow-md p-5 flex flex-col items-start">
+        <h3 className="text-xl font-bold text-gray-800 pb-3 border-b w-full">My Account</h3>
+        <nav className="w-full mt-4 space-y-2">
+          <NavItem to="/account/profile" label="Profile" />
+          <NavItem to="/account/orders" label="My Orders" />
+          <NavItem to="/account/payments" label="My Payments" /> {/* ✅ Added My Payments */}
         </nav>
       </aside>
-      <div className="w-full md:w-3/4 bg-white p-8 rounded-lg shadow-md">
+
+      {/* ✅ Main Content */}
+      <div className="w-full md:w-3/4 bg-white rounded-lg shadow-md p-6 flex flex-col">
         <Outlet />
       </div>
     </div>
   );
 };
+
+/* ✅ Minimalistic & Reusable NavItem Component */
+const NavItem = ({ to, label }) => (
+  <NavLink
+    to={to}
+    className={({ isActive }) =>
+      `block w-full p-3 rounded-md font-medium transition ${
+        isActive ? "bg-purple-500 text-white shadow-sm" : "text-gray-700 hover:bg-gray-100"
+      }`
+    }
+  >
+    {label}
+  </NavLink>
+);
 
 export default AccountDashboard;

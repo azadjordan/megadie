@@ -3,6 +3,44 @@ import { ORDERS_URL } from "../constants";
 
 export const ordersApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
+    toggleDebtAssignment: builder.mutation({
+      query: (orderId) => ({
+        url: `${ORDERS_URL}/${orderId}/toggle-debt`,
+        method: "PUT",
+      }),
+      invalidatesTags: ["Order"],
+    }),
+
+    updateOrderPrices: builder.mutation({
+      query: ({ orderId, updatedItems, deliveryCharge, extraFee }) => ({
+        url: `${ORDERS_URL}/${orderId}/update-prices`,
+        method: "PUT",
+        body: { updatedItems, deliveryCharge, extraFee }, // ✅ Include extraFee
+        credentials: "include",
+      }),
+      invalidatesTags: ["Order"],
+    }),
+
+    updateSellerNote: builder.mutation({
+      query: ({ orderId, sellerNote }) => ({
+        url: `${ORDERS_URL}/${orderId}/seller-note`,
+        method: "PUT",
+        body: { sellerNote },
+        credentials: "include",
+      }),
+      invalidatesTags: ["Order"],
+    }),
+    // ✅ Update Admin Note
+    updateAdminNote: builder.mutation({
+      query: ({ orderId, adminNote }) => ({
+        url: `${ORDERS_URL}/${orderId}/admin-note`,
+        method: "PUT",
+        body: { adminNote }, // ✅ Ensure adminNote is correctly sent
+        credentials: "include",
+      }),
+      invalidatesTags: ["Order"],
+    }),
+
     // ✅ Update Order Status (Admin)
     updateOrderStatus: builder.mutation({
       query: ({ orderId, status }) => ({
@@ -13,7 +51,8 @@ export const ordersApiSlice = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ["Order"],
     }),
-    // ✅ Toggle order payment status (Admin)
+
+    // ✅ Toggle Order Payment Status (Admin)
     toggleOrderPaymentStatus: builder.mutation({
       query: (orderId) => ({
         url: `${ORDERS_URL}/${orderId}/toggle-pay`,
@@ -22,18 +61,19 @@ export const ordersApiSlice = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ["Order"],
     }),
-    // ✅ Create a new order
+
+    // ✅ Create a New Order (Ensure it uses `clientNote`)
     createOrder: builder.mutation({
-      query: (data) => ({
+      query: ({ orderItems, totalPrice, clientNote }) => ({
         url: `${ORDERS_URL}/`,
         method: "POST",
-        body: data,
+        body: { orderItems, totalPrice, clientNote }, // ✅ Correct field name
         credentials: "include",
       }),
-      invalidatesTags: ["Orders"], // ✅ Ensures MyOrders refetches automatically
+      invalidatesTags: ["Orders"],
     }),
 
-    // ✅ Get a single order by ID
+    // ✅ Get a Single Order by ID (Includes `clientNote` & `adminNote`)
     getOrderById: builder.query({
       query: (orderId) => ({
         url: `${ORDERS_URL}/${orderId}`,
@@ -44,7 +84,7 @@ export const ordersApiSlice = apiSlice.injectEndpoints({
       keepUnusedDataFor: 300, // ✅ Keeps order details cached for 5 minutes
     }),
 
-    // ✅ Get logged-in user's orders
+    // ✅ Get Logged-in User's Orders
     getMyOrders: builder.query({
       query: () => ({
         url: `${ORDERS_URL}/myorders`,
@@ -55,7 +95,7 @@ export const ordersApiSlice = apiSlice.injectEndpoints({
       keepUnusedDataFor: 600, // ✅ Keeps MyOrders cached for 10 minutes
     }),
 
-    // ✅ Get all orders (Admin only)
+    // ✅ Get All Orders (Admin Only)
     getAllOrders: builder.query({
       query: () => ({
         url: `${ORDERS_URL}/`,
@@ -65,6 +105,7 @@ export const ordersApiSlice = apiSlice.injectEndpoints({
       providesTags: ["Orders"],
       keepUnusedDataFor: 120, // ✅ Keeps admin OrderList cached for 2 minutes
     }),
+
     // ✅ Deduct Stock (Admin)
     deductStock: builder.mutation({
       query: (orderId) => ({
@@ -87,6 +128,7 @@ export const ordersApiSlice = apiSlice.injectEndpoints({
   }),
 });
 
+// ✅ Export Hooks
 export const {
   useCreateOrderMutation,
   useGetOrderByIdQuery,
@@ -96,4 +138,8 @@ export const {
   useUpdateOrderStatusMutation,
   useDeductStockMutation,
   useRestoreStockMutation,
+  useUpdateAdminNoteMutation,
+  useUpdateSellerNoteMutation,
+  useUpdateOrderPricesMutation,
+  useToggleDebtAssignmentMutation,
 } = ordersApiSlice;

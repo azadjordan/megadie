@@ -18,13 +18,20 @@ const orderSchema = new mongoose.Schema({
     ],
     shippingAddress: { type: String, required: true, default: "No Address Provided" },
     totalPrice: { type: Number, required: true, default: 0.0 },
+    deliveryCharge: { type: Number, required: true, default: 0.0 }, // ✅ Added Delivery Charge
+    extraFee: { type: Number, required: true, default: 0.0 },
+    deliveredBy: { type: String, default: "" }, // ✅ Added delivery person
     isPaid: { type: Boolean, required: true, default: false },
     paidAt: { type: Date },
     isDelivered: { type: Boolean, required: true, default: false },
     deliveredAt: { type: Date },
-    status: { type: String, enum: ["Pending", "Processing", "Shipped", "Delivered", "Cancelled"], default: "Pending" },
-    note: { type: String, default: "" }, // ✅ Store optional note
-    stockUpdated: { type: Boolean, required: true, default: false }, // ✅ New field to track stock updates
+    status: { type: String, enum: ["Pending", "Quoted", "Processing", "Shipped", "Delivered", "Cancelled"], default: "Pending" },
+    clientNote: { type: String, default: "" }, // ✅ Renamed field for client note
+    adminNote: { type: String, default: "" },  // ✅ Admin-only note
+    sellerNote: { type: String, default: "" }, // ✅ NEW - Seller's Note (Visible to user)
+    stockUpdated: { type: Boolean, required: true, default: false },
+    isQuoted: { type: Boolean, default: false },
+    isDebtAssigned: { type: Boolean, default: false },
 }, { timestamps: true });
 
 const Order = mongoose.model("Order", orderSchema);

@@ -3,8 +3,6 @@ import User from "../models/userModel.js"
 import generateToken from "../utils/generateToken.js"
 // import sendEmail from "../utils/sendEmails.js";
 
-
-
 // @desc    Auth user & get token
 // @route   POST /api/users/auth
 // @access  Public
@@ -114,6 +112,8 @@ const updateUserProfile = asyncHandler(async (req, res) => {
     const user = await User.findById(req.user._id);
   
     if (user) {
+        console.log(req.body.phoneNumber);
+        
       user.name = req.body.name || user.name;
       user.phoneNumber = req.body.phoneNumber || user.phoneNumber;
       user.address = req.body.address || user.address;
@@ -176,32 +176,40 @@ const deleteUser = asyncHandler(async(req,res) => {
     }
 })
 
-// @desc    Update user
+// @desc    Update user (Admin)
 // @route   PUT /api/users/:id
 // @access  Private/Admin
-const updateUser = asyncHandler(async(req,res) => {
-    const user = await User.findById(req.params.id)
+const updateUser = asyncHandler(async (req, res) => {
+    const user = await User.findById(req.params.id);
 
-    if (user){
-        user.name = req.body.name || user.name
-        user.email = req.body.email || user.email
-        user.phoneNumber = req.body.phoneNumber || user.phoneNumber
-        user.isAdmin = Boolean(req.body.isAdmin)
-
-        const updatedUser = await user.save()
-
-        res.status(200).json({
-            _id: updatedUser._id,
-            name: updatedUser.name,
-            email: updatedUser.email,
-            phoneNumber: updatedUser.phoneNumber,
-            isAdmin: updatedUser.isAdmin,
-        })
-    } else {
-        res.status(404)
-        throw new Error('User not found')
+    if (!user) {
+        res.status(404);
+        throw new Error("User not found");
     }
-})
+
+    // Update user fields from request body (keep existing values if not provided)
+    user.name = req.body.name || user.name;
+    user.email = req.body.email || user.email;
+    user.phoneNumber = req.body.phoneNumber || user.phoneNumber;
+    user.address = req.body.address || user.address;
+    user.wallet = req.body.wallet !== undefined ? req.body.wallet : user.wallet;
+    user.outstandingBalance = req.body.outstandingBalance !== undefined ? req.body.outstandingBalance : user.outstandingBalance;
+    user.isAdmin = Boolean(req.body.isAdmin);
+
+    const updatedUser = await user.save();
+
+    res.status(200).json({
+        _id: updatedUser._id,
+        name: updatedUser.name,
+        email: updatedUser.email,
+        phoneNumber: updatedUser.phoneNumber,
+        address: updatedUser.address,
+        wallet: updatedUser.wallet,
+        outstandingBalance: updatedUser.outstandingBalance,
+        isAdmin: updatedUser.isAdmin,
+    });
+});
+
 
 export {
     authUser,

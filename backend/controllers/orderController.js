@@ -1,7 +1,174 @@
 import asyncHandler from "../middleware/asyncHandler.js";
 import Order from "../models/orderModel.js";
 import Product from "../models/productModel.js";
+import User from "../models/userModel.js";
 
+// @desc    Toggle Debt Assignment to User (Admin Only)
+// @route   PUT /api/orders/:id/toggle-debt
+// @access  Private/Admin
+const toggleDebtAssignment = asyncHandler(async (req, res) => {
+    const order = await Order.findById(req.params.id).populate("user");
+
+    if (!order) {
+        res.status(404);
+        throw new Error("Order not found");
+    }
+
+    const user = order.user;
+    if (!user) {
+        res.status(404);
+        throw new Error("User not found");
+    }
+
+    // Toggle the isDebtAssigned field
+    order.isDebtAssigned = !order.isDebtAssigned;
+
+    // Update the user's outstanding balance
+    if (order.isDebtAssigned) {
+        user.outstandingBalance += order.totalPrice;
+    } else {
+        user.outstandingBalance -= order.totalPrice;
+    }
+
+    // Save changes
+    await user.save();
+    await order.save();
+
+    res.json({
+        message: `Order ${order.isDebtAssigned ? "assigned as debt" : "removed from debt"}`,
+        isDebtAssigned: order.isDebtAssigned,
+    });
+});
+
+// @desc    Update order item prices, delivery charge, and extra fee (Admin only)
+// @route   PUT /api/orders/:id/update-prices
+// @access  Private/Admin
+const updateOrderPrices = asyncHandler(async (req, res) => {
+    const { updatedItems, deliveryCharge, extraFee } = req.body;
+    const order = await Order.findById(req.params.id);
+
+    if (!order) {
+        res.status(404);
+        throw new Error("Order not found");
+    }
+
+    updatedItems.forEach((updatedItem) => {
+        const item = order.orderItems.find((i) => i.product.toString() === updatedItem.product);
+        if (item) {
+            item.price = updatedItem.price;
+        }
+    });
+
+    order.deliveryCharge = deliveryCharge || 0;
+    order.extraFee = extraFee || 0;
+    order.totalPrice = order.orderItems.reduce(
+        (sum, item) => sum + item.price * item.qty, 
+        0
+    ) + order.deliveryCharge + order.extraFee;
+
+    order.isQuoted = true;
+    if (order.status === "Pending") {
+        order.status = "Quoted";
+    }
+
+    await order.save();
+
+    res.json({ message: "Order prices updated successfully!" });
+});
+
+// @desc    Update the seller note on an order
+// @route   PUT /api/orders/:id/seller-note
+// @access  Private/Admin
+const updateSellerNote = asyncHandler(async (req, res) => {
+    if (!req.user.isAdmin) {
+        res.status(403);
+        throw new Error("Not authorized to update seller notes");
+    }
+
+    const order = await Order.findById(req.params.id);
+
+    if (!order) {
+        res.status(404);
+        throw new Error("Order not found");
+    }
+
+    const { sellerNote } = req.body;
+    order.sellerNote = sellerNote || ""; // Update the seller note
+    const updatedOrder = await order.save();
+
+    res.json({
+        message: "Seller note updated successfully",
+        order: updatedOrder
+    });
+});
+
+// @desc    Update the admin note on an order
+// @route   PUT /api/orders/:id/admin-note
+// @access  Private/Admin
+const updateAdminNote = asyncHandler(async (req, res) => {
+    if (!req.user.isAdmin) {
+        res.status(403);
+        throw new Error("Not authorized to update admin notes");
+    }
+
+    const order = await Order.findById(req.params.id);
+
+    if (!order) {
+        res.status(404);
+        throw new Error("Order not found");
+    }
+
+    const { adminNote } = req.body;
+
+    order.adminNote = adminNote || ""; // Update the admin note
+    const updatedOrder = await order.save();
+
+    res.json({
+        message: "Admin note updated successfully",
+        order: updatedOrder
+    });
+});
+
+// @desc    Toggle order amount assignment to user's outstanding balance
+// @route   PUT /api/orders/:id/toggle-debt
+// @access  Private/Admin
+const toggleOrderDebt = asyncHandler(async (req, res) => {
+    const { id: orderId } = req.params;
+
+    // ✅ Find the order
+    const order = await Order.findById(orderId);
+    if (!order) {
+        res.status(404);
+        throw new Error("Order not found");
+    }
+
+    // ✅ Find the associated user
+    const user = await User.findById(order.user);
+    if (!user) {
+        res.status(404);
+        throw new Error("User not found");
+    }
+
+    // ✅ Toggle whether the order amount is assigned to the user's outstanding balance
+    if (order.isAttachedToDebt) {
+        // If already attached, detach it (subtract from outstandingBalance)
+        user.outstandingBalance -= order.totalPrice;
+        order.isAttachedToDebt = false;
+    } else {
+        // If not attached, attach it (add to outstandingBalance)
+        user.outstandingBalance += order.totalPrice;
+        order.isAttachedToDebt = true;
+    }
+
+    await order.save();
+    await user.save();
+
+    res.json({
+        message: `Order ${order.isAttachedToDebt ? "attached to" : "detached from"} user's debt.`,
+        order,
+        user
+    });
+});
 
 // @desc    Create a new order
 // @route   POST /api/orders
@@ -30,7 +197,7 @@ const createOrder = asyncHandler(async (req, res) => {
 // @route   GET /api/orders/:id
 // @access  Private (Only the order owner or an admin)
 const getOrderById = asyncHandler(async (req, res) => {
-    const order = await Order.findById(req.params.id).populate("user", "name email");
+    const order = await Order.findById(req.params.id).populate("user", "name email phone");
 
     if (!order) {
         res.status(404);
@@ -123,62 +290,45 @@ const updateOrderStatus = asyncHandler(async (req, res) => {
 // @route   POST /api/orders/:id/deduct-stock
 // @access  Private/Admin
 const deductStock = asyncHandler(async (req, res) => {
-    console.log("🟢 Received request to deduct stock for order:", req.params.id);
-
     if (!req.user.isAdmin) {
-        console.log("🔴 Not authorized");
         res.status(403);
         throw new Error("Not authorized to update stock");
     }
 
     const order = await Order.findById(req.params.id);
     if (!order) {
-        console.log("🔴 Order not found");
         res.status(404);
         throw new Error("Order not found");
     }
 
     if (order.stockUpdated) {
-        console.log("🔴 Stock already deducted for this order");
         res.status(400);
         throw new Error("Stock has already been deducted for this order");
     }
 
     try {
-        console.log("🟢 Deducting stock...");
         for (const item of order.orderItems) {
-            console.log(`🔹 Checking product ID: ${item.product}`);
-
-            // 🔍 Log the product lookup
             const product = await Product.findById(item.product);
-            console.log("🔍 Product Query Result:", product);
-
             if (!product) {
-                console.log(`🔴 Product not found in DB for ID: ${item.product}`);
                 throw new Error(`Product not found: ${item.name}`);
             }
 
             if (product.stock < item.qty) {
-                console.log(`🔴 Not enough stock for ${product.name}. Available: ${product.stock}, Requested: ${item.qty}`);
                 throw new Error(`Not enough stock for ${product.name}.`);
             }
 
             product.stock -= item.qty;
             await product.save();
-            console.log(`✅ Stock updated for ${product.name}, New stock: ${product.stock}`);
         }
 
         order.stockUpdated = true;
         await order.save();
-        console.log("✅ Stock deducted successfully!");
 
         res.json({ message: "Stock deducted successfully", order });
     } catch (error) {
-        console.error("Stock deduction error:", error.message);
         res.status(500).json({ message: error.message || "Internal Server Error" });
     }
 });
-
 
 // @desc    Restore stock for an order
 // @route   POST /api/orders/:id/restore-stock
@@ -225,5 +375,10 @@ export {
     toggleOrderPaymentStatus,
     updateOrderStatus,
     deductStock, // ✅ New
-    restoreStock // ✅ New
+    restoreStock, // ✅ New
+    toggleOrderDebt,
+    updateAdminNote,
+    updateSellerNote,
+    updateOrderPrices,
+    toggleDebtAssignment
 };

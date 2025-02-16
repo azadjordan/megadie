@@ -38,7 +38,7 @@ const Profile = () => {
   };
 
   return (
-    <div className="container mx-auto px-6 py-12 pt-[80px]">
+    <div className="container mx-auto px-6">
       <h2 className="text-3xl font-bold text-center mb-6">My Profile</h2>
 
       {isLoading && <p className="text-gray-500 text-center">Loading profile...</p>}
@@ -74,9 +74,9 @@ const Profile = () => {
             />
           </div>
 
-          {/* Phone Number */}
+          {/* phoneNumber Number */}
           <div>
-            <label className="block text-sm font-medium text-gray-700">Phone Number</label>
+            <label className="block text-sm font-medium text-gray-700">phoneNumber Number</label>
             <input
               type="text"
               className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"

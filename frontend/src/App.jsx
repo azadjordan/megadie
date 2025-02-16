@@ -21,11 +21,16 @@ import OrderList from "./pages/OrderList";
 import ProductList from "./pages/ProductList";
 import ProductEdit from "./pages/ProductEdit";
 import UserList from "./pages/UserList"; // ✅ Import User List Page
-import UserEdit from "./pages/UserEdit"; // ✅ Import User Edit Page
+import User from "./pages/User"; // ✅ Import User Edit Page
+import EditOrderPrices from "./pages/EditOrderPrices"; // ✅ Import EditOrderPrices
+import OrderDetailsUser from "./pages/OrderDetailsUser";
+import MyPayments from "./pages/MyPayments";
+import PaymentList from "./pages/PaymentList";
+import CreatePayment from "./pages/CreatePayment";
 
 const App = () => {
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <div className="min-h-screen flex flex-col bg-gray-50 pt-[60px]">
       {/* ✅ ToastContainer placed above everything */}
       <ToastContainer
         position="top-right"
@@ -45,7 +50,7 @@ const App = () => {
       <main className="container mx-auto flex-grow">
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/shop" element={<Shop />} /> 
+          <Route path="/shop" element={<Shop />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
@@ -55,10 +60,15 @@ const App = () => {
             <Route path="/account" element={<AccountDashboard />}>
               <Route path="profile" element={<Profile />} />
               <Route path="orders" element={<MyOrders />} />
+              <Route path="orders/:id" element={<OrderDetailsUser />} />{" "}
+              <Route path="/account/payments" element={<MyPayments />} />
             </Route>
             <Route path="/place-order" element={<PlaceOrder />} />
             <Route path="/order/:id" element={<OrderDetails />} />
-            <Route path="/order-confirmation/:orderId" element={<OrderConfirmation />} />
+            <Route
+              path="/order-confirmation/:orderId"
+              element={<OrderConfirmation />}
+            />
           </Route>
 
           {/* ✅ Admin Routes */}
@@ -66,8 +76,15 @@ const App = () => {
             <Route path="/admin/orders" element={<OrderList />} />
             <Route path="/admin/products" element={<ProductList />} />
             <Route path="/admin/product/edit/:id" element={<ProductEdit />} />
-            <Route path="/admin/users" element={<UserList />} /> 
-            <Route path="/admin/user/edit/:id" element={<UserEdit />} /> 
+            <Route path="/admin/users" element={<UserList />} />
+            <Route path="/admin/user/:id" element={<User/>} />
+            <Route
+              path="/admin/order/edit-prices/:orderId"
+              element={<EditOrderPrices />}
+            />
+            <Route path="/admin/payments" element={<PaymentList />} />
+            <Route path="/admin/payments/create" element={<CreatePayment />} />
+           
           </Route>
         </Routes>
       </main>
