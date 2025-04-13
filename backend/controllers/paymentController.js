@@ -2,11 +2,55 @@ import asyncHandler from "../middleware/asyncHandler.js";
 import Payment from "../models/paymentModel.js";
 import User from "../models/userModel.js";
 
+// @desc    Delete a payment (Admin only)
+// @route   DELETE /api/payments/:id
+// @access  Private/Admin
+const deletePayment = asyncHandler(async (req, res) => {
+    const payment = await Payment.findById(req.params.id).populate("user");
+
+    if (!payment) {
+        res.status(404);
+        throw new Error("Payment not found.");
+    }
+
+    // ✅ Prevent deletion if the payment is not cancelled
+    if (payment.status !== "Cancelled") {
+        res.status(400);
+        throw new Error("Payment must be cancelled before deletion.");
+    }
+
+    const user = await User.findById(payment.user._id);
+    if (!user) {
+        res.status(404);
+        throw new Error("User not found.");
+    }
+
+    await payment.deleteOne(); // ✅ Delete the payment
+
+    res.json({ message: "Payment deleted successfully." });
+});
+
+
+// @desc    Get payment by ID
+// @route   GET /api/payments/:id
+// @access  Private/Admin
+const getPaymentById = asyncHandler(async (req, res) => {
+    const payment = await Payment.findById(req.params.id).populate("user");
+
+    if (!payment) {
+        res.status(404);
+        throw new Error("Payment not found");
+    }
+
+    res.json(payment);
+});
+
+
 // @desc    Update payment details (Admin only)
 // @route   PUT /api/payments/:id
 // @access  Private/Admin
 const updatePayment = asyncHandler(async (req, res) => {
-    const { status } = req.body;
+    const { status, paymentMethod, note } = req.body;
 
     const payment = await Payment.findById(req.params.id).populate("user");
 
@@ -21,14 +65,16 @@ const updatePayment = asyncHandler(async (req, res) => {
         throw new Error("User not found");
     }
 
+    let walletMessage = null; // ✅ Store message for toast feedback
+
     // ✅ If status is changing, update user's wallet
     if (status && status !== payment.status) {
         if (status === "Cancelled" && payment.status === "Received") {
-            // ✅ Payment is being cancelled → Deduct from user's wallet
             user.wallet -= payment.amount;
+            walletMessage = `${user.name}'s wallet decreased by $${payment.amount.toFixed(2)}`;
         } else if (status === "Received" && payment.status === "Cancelled") {
-            // ✅ Payment is being restored → Add back to user's wallet
             user.wallet += payment.amount;
+            walletMessage = `${user.name}'s wallet increased by $${payment.amount.toFixed(2)}`;
         }
     }
 
@@ -38,12 +84,19 @@ const updatePayment = asyncHandler(async (req, res) => {
         throw new Error("Insufficient funds in wallet to cancel this payment.");
     }
 
+    // ✅ Update payment details
+    payment.paymentMethod = paymentMethod || payment.paymentMethod;
+    payment.status = status || payment.status;
+    payment.note = note || payment.note;
+
     // ✅ Save user and payment updates
-    payment.status = status;
     await user.save();
     const updatedPayment = await payment.save();
 
-    res.json(updatedPayment);
+    res.json({
+        message: walletMessage || "Payment updated successfully.",
+        updatedPayment,
+    });
 });
 
 // @desc    Create a new payment (Admin only)
@@ -59,8 +112,9 @@ const createPayment = asyncHandler(async (req, res) => {
         throw new Error("User not found");
     }
 
-    // ✅ Validate amount
-    if (!amount || amount <= 0) {
+    // ✅ Validate and convert amount
+    const paymentAmount = Number(amount);
+    if (isNaN(paymentAmount) || paymentAmount <= 0) {
         res.status(400);
         throw new Error("Invalid payment amount");
     }
@@ -68,17 +122,22 @@ const createPayment = asyncHandler(async (req, res) => {
     // ✅ Create a new payment record
     const payment = new Payment({
         user: userId,
-        amount,
+        amount: paymentAmount, // Ensure it's a number
         paymentMethod,
         note,
     });
 
-    // ✅ Save to DB
+    // ✅ Save the payment to the database
     await payment.save();
 
+    // ✅ Update user's wallet balance
+    user.wallet = (user.wallet || 0) + paymentAmount; // Ensure wallet is treated as a number
+    await user.save();
+
     res.status(201).json({
-        message: "Payment created successfully!",
+        message: `Payment added and Wallet Increased for ${user.name.split(" ")[0]}`,
         payment,
+        walletBalance: user.wallet,
     });
 });
 
@@ -101,4 +160,4 @@ const getUserPayments = asyncHandler(async (req, res) => {
 });
 
 
-export { createPayment, getAllPayments, getUserPayments, updatePayment };
+export { createPayment, getAllPayments, getUserPayments, updatePayment, getPaymentById, deletePayment };

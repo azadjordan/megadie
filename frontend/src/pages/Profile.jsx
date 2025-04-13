@@ -6,7 +6,6 @@ import { useUpdateUserProfileMutation, useGetUserProfileQuery } from "../slices/
 const Profile = () => {
   const dispatch = useDispatch();
   const { userInfo } = useSelector((state) => state.auth);
-
   const { data: profile, isLoading, isError } = useGetUserProfileQuery(undefined, { skip: !!userInfo });
   const [updateUserProfile, { isLoading: isUpdating }] = useUpdateUserProfileMutation();
 
@@ -33,73 +32,79 @@ const Profile = () => {
       dispatch(setCredentials({ ...userInfo, name, phoneNumber, address }));
       setMessage({ type: "success", text: "Profile updated successfully!" });
     } catch (error) {
-      setMessage({ type: "error", text: "Failed to update profile" });
+      setMessage({ type: "error", text: "Failed to update profile." });
     }
   };
 
   return (
-    <div className="container mx-auto px-6">
-      <h2 className="text-3xl font-bold text-center mb-6">My Profile</h2>
+    <div className="container mx-auto px-6 mt-20 max-w-2xl">
+      <h1 className="text-3xl font-bold text-gray-800 text-center mb-6">My Profile</h1>
 
-      {isLoading && <p className="text-gray-500 text-center">Loading profile...</p>}
-      {isError && <p className="text-red-500 text-center">Failed to load profile.</p>}
+      {isLoading ? (
+        <p className="text-gray-500 text-center">Loading profile...</p>
+      ) : isError ? (
+        <p className="text-center text-red-500">Failed to load profile.</p>
+      ) : (
+        <form
+          onSubmit={handleUpdateProfile}
+          className="bg-white shadow-md rounded-xl p-6 space-y-6 border border-gray-200"
+        >
+          {/* ✅ Success/Error Message */}
+          {message && (
+            <p className={`text-center p-3 rounded-lg ${message.type === "success" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
+              {message.text}
+            </p>
+          )}
 
-      {message && (
-        <div className={`p-3 text-center rounded-md mb-4 ${message.type === "success" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
-          {message.text}
-        </div>
-      )}
-
-      {!isLoading && !isError && (
-        <form onSubmit={handleUpdateProfile} className="max-w-lg mx-auto bg-white p-6 shadow-md rounded-lg space-y-5">
-          {/* Name Field */}
+          {/* ✅ Name */}
           <div>
-            <label className="block text-sm font-medium text-gray-700">Full Name</label>
+            <label className="block text-gray-700 font-medium mb-2">Full Name</label>
             <input
               type="text"
-              className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
               value={name}
               onChange={(e) => setName(e.target.value)}
+              required
+              className="w-full border border-gray-300 p-3 rounded-lg focus:ring focus:ring-purple-300"
             />
           </div>
 
-          {/* Email (Disabled) */}
+          {/* ✅ Email (Disabled) */}
           <div>
-            <label className="block text-sm font-medium text-gray-700">Email</label>
+            <label className="block text-gray-700 font-medium mb-2">Email</label>
             <input
               type="text"
-              className="w-full p-3 border rounded-lg bg-gray-100 cursor-not-allowed"
               value={userInfo.email}
               disabled
+              className="w-full border border-gray-300 p-3 rounded-lg bg-gray-100 cursor-not-allowed"
             />
           </div>
 
-          {/* phoneNumber Number */}
+          {/* ✅ Phone Number */}
           <div>
-            <label className="block text-sm font-medium text-gray-700">phoneNumber Number</label>
+            <label className="block text-gray-700 font-medium mb-2">Phone Number</label>
             <input
               type="text"
-              className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
               value={phoneNumber}
               onChange={(e) => setPhoneNumber(e.target.value)}
+              className="w-full border border-gray-300 p-3 rounded-lg focus:ring focus:ring-purple-300"
             />
           </div>
 
-          {/* Address */}
+          {/* ✅ Address */}
           <div>
-            <label className="block text-sm font-medium text-gray-700">Address</label>
+            <label className="block text-gray-700 font-medium mb-2">Address</label>
             <input
               type="text"
-              className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
               value={address}
               onChange={(e) => setAddress(e.target.value)}
+              className="w-full border border-gray-300 p-3 rounded-lg focus:ring focus:ring-purple-300"
             />
           </div>
 
-          {/* Update Button */}
+          {/* ✅ Update Button */}
           <button
             type="submit"
-            className={`w-full bg-purple-500 text-white p-3 rounded-lg font-semibold hover:bg-purple-600 transition ${isUpdating ? "opacity-50 cursor-not-allowed" : ""}`}
+            className="bg-purple-600 text-white font-semibold px-6 py-3 rounded-lg hover:bg-purple-700 transition w-full"
             disabled={isUpdating}
           >
             {isUpdating ? "Updating..." : "Update Profile"}

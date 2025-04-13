@@ -50,7 +50,7 @@ const OrderDetails = () => {
     return <p className="text-gray-500 text-center py-10">Order not found.</p>;
 
   return (
-    <div className="container mx-auto px-6 py-12 w-[85%]">
+    <div className="container mx-auto px-6 mt-16 w-[85%]">
       {/* ✅ Back Button */}
       <button
         onClick={() => navigate(-1)}
@@ -111,7 +111,7 @@ const OrderDetails = () => {
               <div className="flex justify-between border-b pb-2">
                 <span className="font-medium text-gray-700">Phone:</span>
                 <span>
-                  {order.user.phone || (
+                  {order.user.phoneNumber || (
                     <span className="text-gray-500">
                       No phone number provided
                     </span>
@@ -233,14 +233,15 @@ const OrderDetails = () => {
                 key={item.product}
                 className="flex items-center justify-between border-b py-4 last:border-none"
               >
-                <img
-                  src={item.image}
-                  alt={item.name}
-                  className="w-16 h-16 rounded-md object-cover"
-                />
+<img 
+  src={item.product.images[0]} 
+  alt={item.product.name} 
+  className="w-16 h-16 rounded-md object-cover" 
+/>
+
                 <div className="flex-grow px-4">
-                  <h2 className="text-md font-medium truncate">{item.name}</h2>
-                  <p className="text-gray-600 text-sm">
+                <h2 className="text-md font-medium truncate">{item.product.name}</h2>
+                <p className="text-gray-600 text-sm">
                     ${item.price.toFixed(2)} × {item.qty}
                   </p>
                 </div>

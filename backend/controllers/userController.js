@@ -98,6 +98,8 @@ const getUserProfile = asyncHandler(async (req, res) => {
         phoneNumber: user.phoneNumber, // ✅ Ensure phoneNumber is included
         address: user.address, // ✅ Ensure address is included
         isAdmin: user.isAdmin,
+        wallet: user.wallet,
+        outstandingBalance: user.outstandingBalance,
       });
     } else {
       res.status(404);

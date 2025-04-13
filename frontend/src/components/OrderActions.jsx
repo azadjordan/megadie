@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import {
@@ -49,10 +49,11 @@ const OrderActions = ({
   const [adminNoteText, setAdminNoteText] = useState(adminNote || "");
   const [sellerNoteText, setSellerNoteText] = useState(sellerNote || ""); // ✅ Track Seller Note
 
+
   const handleToggleDebtAssignment = async () => {
-    try {
+    try {      
       await toggleDebtAssignment(orderId).unwrap();
-      toast.success("Debt assignment updated!");
+      toast.success("Debt assigned to User!");
 
       await refetch(); // ✅ Refresh order data
       await refetchUser(); // ✅ NEW: Refresh user data to reflect wallet & debt changes
@@ -74,15 +75,24 @@ const OrderActions = ({
   };
 
   // ✅ Toggle Payment Status
-  const handleTogglePayment = async () => {
-    try {
-      await togglePaymentStatus(orderId).unwrap();
-      toast.success("Payment status updated!");
-      await refetch();
-    } catch {
-      toast.error("Failed to update payment status.");
+  const handleTogglePayment = async (orderId) => {
+    // ✅ Show alert ONLY when marking as paid AND debt is not assigned
+    if (!isPaid && !isDebtAssigned) {
+        const confirmProceed = window.confirm(
+            "Debt is not assigned to user. Do you want to proceed?"
+        );
+        if (!confirmProceed) return; // ❌ Stop if admin presses "Cancel"
     }
-  };
+
+    try {
+        const response = await togglePaymentStatus(orderId).unwrap();
+        toast.success(response.message);
+        await refetchUser(); // ✅ NEW: Refresh user data to reflect wallet & debt changes
+    } catch (error) {
+        toast.error(error?.data?.message || "Failed to update payment status.");
+    }
+};
+
 
   // ✅ Handle Admin Note Update
   const handleAdminNoteUpdate = async () => {
@@ -144,12 +154,13 @@ const OrderActions = ({
           <div className="flex items-center justify-between bg-gray-100 p-3 rounded-2xl">
             <span className="text-gray-700 text-md">Mark as Paid</span>
             <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                checked={isPaid}
-                onChange={handleTogglePayment}
-                className="hidden"
-              />
+            <input
+  type="checkbox"
+  checked={isPaid}
+  onChange={() => handleTogglePayment(orderId)}  // ✅ Correctly pass orderId
+  className="hidden"
+/>
+
               <div
                 className={`w-10 h-5 flex items-center bg-gray-300 rounded-full p-0.5 transition-all ${
                   isPaid ? "bg-green-500" : ""
@@ -267,7 +278,7 @@ const OrderActions = ({
         {/* ✅ Debt Assignment Section */}
         <div className="flex flex-col">
           <label className="text-md font-medium text-gray-700 mb-1">
-            Assign Order Total to Debt
+            Assign Total to Debt
           </label>
           <div className="flex gap-2">
             {/* ✅ Assign as Debt Button */}

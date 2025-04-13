@@ -19,25 +19,22 @@ const PlaceOrder = () => {
     try {
       const orderData = {
         orderItems: cartItems.map((item) => ({
-          product: item._id,
-          name: item.name,
-          image: item.image,
-          qty: item.quantity,
-          price: item.price,
-          specifications: item.specifications || {},
+          product: item._id, // ✅ Product ID (required)
+          sku: item.sku, // ✅ Ensuring SKU is sent
+          qty: item.quantity, // ✅ Sending quantity
+          price: item.price, // ✅ Final price per unit (admin will adjust later)
         })),
-        totalPrice,
-        note,
+        note, // ✅ Sending optional order note
       };
-
+  
       const newOrder = await createOrder(orderData).unwrap();
-
+  
       dispatch(
         apiSlice.util.updateQueryData("getMyOrders", undefined, (draftOrders) => {
           draftOrders.unshift(newOrder);
         })
       );
-
+  
       dispatch(clearCart());
       navigate(`/order-confirmation/${newOrder._id}`);
     } catch (err) {
@@ -45,6 +42,7 @@ const PlaceOrder = () => {
       setErrorMessage(err?.data?.message || "An error occurred while placing your order.");
     }
   };
+  
 
   return (
     <div className="container mx-auto px-6 py-12 pt-[80px]">

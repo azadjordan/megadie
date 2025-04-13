@@ -4,7 +4,6 @@ import "react-toastify/dist/ReactToastify.css";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import Home from "./pages/Home";
-import Shop from "./pages/Shop"; // ✅ Import Shop Page
 import Cart from "./pages/Cart";
 import Login from "./pages/Login";
 import Product from "./pages/Product";
@@ -19,7 +18,6 @@ import MyOrders from "./pages/MyOrders";
 import AdminRoute from "./components/AdminRoute";
 import OrderList from "./pages/OrderList";
 import ProductList from "./pages/ProductList";
-import ProductEdit from "./pages/ProductEdit";
 import UserList from "./pages/UserList"; // ✅ Import User List Page
 import User from "./pages/User"; // ✅ Import User Edit Page
 import EditOrderPrices from "./pages/EditOrderPrices"; // ✅ Import EditOrderPrices
@@ -27,6 +25,12 @@ import OrderDetailsUser from "./pages/OrderDetailsUser";
 import MyPayments from "./pages/MyPayments";
 import PaymentList from "./pages/PaymentList";
 import CreatePayment from "./pages/CreatePayment";
+import ScrollToTopButton from "./components/ScrollToTopButton";
+import PaymentEdit from "./pages/PaymentEdit";
+import Shop from "./pages/Shop";
+import CategoryList from "./pages/CategoryList";
+import QuoteList from "./pages/QuoteList";
+import InvoiceList from "./pages/InvoiceList";
 
 const App = () => {
   return (
@@ -34,7 +38,7 @@ const App = () => {
       {/* ✅ ToastContainer placed above everything */}
       <ToastContainer
         position="top-right"
-        autoClose={1800}
+        autoClose={2500}
         hideProgressBar={false}
         newestOnTop
         closeOnClick
@@ -50,8 +54,8 @@ const App = () => {
       <main className="container mx-auto flex-grow">
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/shop" element={<Shop />} />
           <Route path="/cart" element={<Cart />} />
+          <Route path="/shop" element={<Shop />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/product/:id" element={<Product />} />
@@ -75,19 +79,24 @@ const App = () => {
           <Route element={<AdminRoute />}>
             <Route path="/admin/orders" element={<OrderList />} />
             <Route path="/admin/products" element={<ProductList />} />
-            <Route path="/admin/product/edit/:id" element={<ProductEdit />} />
+            <Route path="/admin/categories" element={<CategoryList />} />
             <Route path="/admin/users" element={<UserList />} />
-            <Route path="/admin/user/:id" element={<User/>} />
+            <Route path="/admin/quotes" element={<QuoteList />} />
+            <Route path="/admin/invoices" element={<InvoiceList />} />
+            <Route path="/admin/user/:id" element={<User />} />
             <Route
               path="/admin/order/edit-prices/:orderId"
               element={<EditOrderPrices />}
             />
             <Route path="/admin/payments" element={<PaymentList />} />
             <Route path="/admin/payments/create" element={<CreatePayment />} />
-           
+            <Route path="/admin/payments/edit/:id" element={<PaymentEdit />} />
+
           </Route>
         </Routes>
       </main>
+      <ScrollToTopButton />
+
       <Footer />
     </div>
   );

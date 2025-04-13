@@ -21,16 +21,6 @@ export const paymentsApiSlice = apiSlice.injectEndpoints({
       providesTags: (result, error, userId) => [{ type: "Payments", id: userId }],
     }),
 
-    // ✅ Create a New Payment (Admin Only)
-    createPayment: builder.mutation({
-      query: ({ userId, amount, paymentMethod, note }) => ({
-        url: PAYMENTS_URL,
-        method: "POST",
-        body: { userId, amount, paymentMethod, note }, // ✅ Ensure correct payload
-      }),
-      invalidatesTags: ["Payments"],
-    }),
-
     // ✅ Fetch a Single Payment by ID
     getPaymentById: builder.query({
       query: (id) => ({
@@ -38,6 +28,16 @@ export const paymentsApiSlice = apiSlice.injectEndpoints({
         method: "GET",
       }),
       providesTags: (result, error, id) => [{ type: "Payments", id }],
+    }),
+
+    // ✅ Create a New Payment (Admin Only)
+    createPayment: builder.mutation({
+      query: ({ userId, amount, paymentMethod, note }) => ({
+        url: PAYMENTS_URL,
+        method: "POST",
+        body: { userId, amount, paymentMethod, note },
+      }),
+      invalidatesTags: ["Payments"],
     }),
 
     // ✅ Update an Existing Payment (Admin Only)
@@ -64,8 +64,8 @@ export const paymentsApiSlice = apiSlice.injectEndpoints({
 export const {
   useGetAllPaymentsQuery,
   useGetUserPaymentsQuery, 
-  useCreatePaymentMutation,
   useGetPaymentByIdQuery,
+  useCreatePaymentMutation,
   useUpdatePaymentMutation,
   useDeletePaymentMutation,
 } = paymentsApiSlice;

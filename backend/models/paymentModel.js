@@ -7,13 +7,18 @@ const paymentSchema = new mongoose.Schema(
             required: true,
             ref: "User",
         },
+        invoice: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Invoice",
+            required: true,
+          },          
         amount: {
             type: Number,
             required: true,
         },
         paymentMethod: {
             type: String,
-            enum: ["Cash", "Bank Transfer", "Credit Card", "Other"],
+            enum: ["Cash", "Bank Transfer", "Credit Card", "Cheque", "Other"],
             required: true,
         },
         paymentDate: {
@@ -26,7 +31,7 @@ const paymentSchema = new mongoose.Schema(
         },
         status: {
             type: String,
-            enum: ["Received", "Cancelled"], // ✅ New status field
+            enum: ["Received", "Refunded"], // ✅ New status field
             default: "Received",
         },
     },

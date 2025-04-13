@@ -2,34 +2,68 @@ import mongoose from "mongoose";
 
 const productSchema = new mongoose.Schema(
   {
-    // ✅ Product Name
-    name: { type: String, required: true, trim: true },
+    name: { type: String, required: true },
 
-    // ✅ Categorization
-    category: { type: String, required: true, index: true, trim: true },
-    material: { type: String, required: false, index: true, trim: true },
+    productType: {
+      type: String,
+      enum: ["Ribbon", "Creasing Matrix", "Double Face Tape"],
+      required: true,
+    },
 
-    // ✅ Specifications
-    size: { type: String, required: false, index: true, trim: true },
-    color: { type: String, required: false, trim: true }, // Single color only
+    category: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Category",
+      required: true,
+    },
 
-    // ✅ Identification & Description
-    code: { type: String, unique: true, sparse: true, trim: true }, // Allows null values without enforcing uniqueness
-    description: { type: String, required: true, trim: true, default: "" },
+    size: {
+      type: String,
+      enum: [
+        "1-inch", // Ribbon sizes
+        "0.5-inch",
+        "0.4x1.5", // Creasing Matrix sizes
+        "0.5x1.6",
+        "0.5x1.6",
+        "6mm", // Tape widths
+        "9mm",
+        "10mm",
+        "12mm",
+      ],
+      required: true,
+    },
 
-    // ✅ Image
-    image: { type: String, required: true, trim: true, default: "https://via.placeholder.com/150" },
+    color: {
+      type: String,
+      default: "default",
+    },
 
-    // ✅ Pricing & Inventory
-    price: { type: Number, required: true, min: 0 }, // Ensures price is never negative
-    stock: { type: Number, required: true, default: 0, min: 0 }, // Ensures stock is never negative
-    isAvailable: { type: Boolean, required: true, default: true },
+    code: {
+      type: Number,
+      unique: true,
+      sparse: true, // allows code to be optional but still unique if present
+    },
+
+    displaySpecs: {
+      type: String,
+      default: "", // e.g. "Red | 10mm | Made in Japan"
+    },
+
+    stock: { type: Number, required: true, default: 0 },
+    moq: { type: Number, required: true, default: 1 },
+    isAvailable: { type: Boolean, default: true },
+    origin: { type: String, required: true },
+    storageLocation: { type: String, default: "Warehouse A - Shelf 1" },
+    price: { type: Number, required: true },
+    unit: { type: String, default: "roll" },
+    images: { type: [String], default: [] },
+    description: { type: String, default: "" },
   },
-  { timestamps: true } // ✅ Auto-manages createdAt & updatedAt
+  { timestamps: true }
 );
 
-// ✅ Allow Full Updates
-productSchema.set("strict", false); // Allows updating all fields dynamically
+// Indexes for filtering
+productSchema.index({ productType: 1 });
+productSchema.index({ category: 1 });
 
 const Product = mongoose.model("Product", productSchema);
 export default Product;

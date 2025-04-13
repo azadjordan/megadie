@@ -29,9 +29,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: "No address provided",
     },
-    // ✅ Payment Tracking
-    wallet: { type: Number, default: 0 }, // Total available balance from payments
-    outstandingBalance: { type: Number, default: 0 }, // Total unpaid amount (Debt)
+
   },
   {
     timestamps: true,

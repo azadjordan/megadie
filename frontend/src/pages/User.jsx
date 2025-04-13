@@ -53,104 +53,122 @@ const User = () => {
   };
 
   return (
-    <div className="container mx-auto p-6 mt-[80px] max-w-lg">
-      <h1 className="text-2xl font-semibold text-center mb-4">User</h1>
+    <div className="container mx-auto px-6 mt-20 max-w-2xl">
+      {/* ✅ Back Button at the Top Left */}
+      <button
+        type="button"
+        onClick={() => navigate(-1)}
+        className="mb-4 bg-gray-200 text-gray-700 font-semibold px-4 py-2 rounded-lg hover:bg-gray-300 transition"
+      >
+        ← Back
+      </button>
+
+      <h1 className="text-3xl font-bold text-gray-800 text-center mb-6">Edit User</h1>
 
       {isLoading ? (
-        <p className="text-center text-gray-500">Loading user details...</p>
+        <p className="text-gray-500 text-center">Loading user details...</p>
       ) : error ? (
         <p className="text-center text-red-500">Error fetching user</p>
       ) : (
-        <form onSubmit={submitHandler} className="bg-white p-6 shadow rounded-lg space-y-4">
-          {/* Name */}
+        <form
+          onSubmit={submitHandler}
+          className="bg-white shadow-md rounded-xl p-6 space-y-6 border border-gray-200"
+        >
+          {/* ✅ Name */}
           <div>
-            <label className="text-sm font-medium">Name</label>
+            <label className="block text-gray-700 font-medium mb-2">Name</label>
             <input
               type="text"
               name="name"
               value={formData.name}
               onChange={handleChange}
-              className="w-full border p-2 rounded mt-1"
+              required
+              className="w-full border border-gray-300 p-3 rounded-lg focus:ring focus:ring-purple-300"
+              placeholder="Enter user name"
             />
           </div>
 
-          {/* Email (Now Editable) */}
+          {/* ✅ Email */}
           <div>
-            <label className="text-sm font-medium">Email</label>
+            <label className="block text-gray-700 font-medium mb-2">Email</label>
             <input
               type="email"
               name="email"
               value={formData.email}
               onChange={handleChange}
-              className="w-full border p-2 rounded mt-1"
+              required
+              className="w-full border border-gray-300 p-3 rounded-lg focus:ring focus:ring-purple-300"
+              placeholder="Enter user email"
             />
           </div>
 
-          {/* Phone Number */}
+          {/* ✅ Phone Number */}
           <div>
-            <label className="text-sm font-medium">Phone Number</label>
+            <label className="block text-gray-700 font-medium mb-2">Phone Number</label>
             <input
               type="text"
               name="phoneNumber"
               value={formData.phoneNumber}
               onChange={handleChange}
-              className="w-full border p-2 rounded mt-1"
+              className="w-full border border-gray-300 p-3 rounded-lg focus:ring focus:ring-purple-300"
+              placeholder="Enter phone number"
             />
           </div>
 
-          {/* Address */}
+          {/* ✅ Address */}
           <div>
-            <label className="text-sm font-medium">Address</label>
+            <label className="block text-gray-700 font-medium mb-2">Address</label>
             <input
               type="text"
               name="address"
               value={formData.address}
               onChange={handleChange}
-              className="w-full border p-2 rounded mt-1"
+              className="w-full border border-gray-300 p-3 rounded-lg focus:ring focus:ring-purple-300"
+              placeholder="Enter address"
             />
           </div>
 
-          {/* Wallet (Money Paid) */}
+          {/* ✅ Wallet Balance */}
           <div>
-            <label className="text-sm font-medium">Wallet Balance</label>
+            <label className="block text-gray-700 font-medium mb-2">Wallet Balance</label>
             <input
               type="number"
               name="wallet"
               value={formData.wallet}
               onChange={handleChange}
-              className="w-full border p-2 rounded mt-1"
+              className="w-full border border-gray-300 p-3 rounded-lg focus:ring focus:ring-purple-300"
             />
           </div>
 
-          {/* Outstanding Balance (Debt) */}
+          {/* ✅ Outstanding Balance */}
           <div>
-            <label className="text-sm font-medium">Outstanding Balance (Debt)</label>
+            <label className="block text-gray-700 font-medium mb-2">Outstanding Balance (Debt)</label>
             <input
               type="number"
               name="outstandingBalance"
               value={formData.outstandingBalance}
               onChange={handleChange}
-              className="w-full border p-2 rounded mt-1"
+              className="w-full border border-gray-300 p-3 rounded-lg focus:ring focus:ring-purple-300"
             />
           </div>
 
-          {/* Admin Toggle */}
-          <div className="flex items-center gap-2">
+          {/* ✅ Admin Toggle */}
+          <div className="flex items-center space-x-3">
             <input
               type="checkbox"
               name="isAdmin"
               checked={formData.isAdmin}
               onChange={handleChange}
-              className="w-4 h-4"
+              className="w-5 h-5 cursor-pointer"
             />
-            <label className="text-sm font-medium">Admin</label>
+            <label className="text-gray-700 font-medium">Admin</label>
           </div>
 
-          {/* Submit Button */}
+          {/* ✅ Submit Button */}
           <button
             type="submit"
+            className="bg-purple-600 text-white font-semibold px-6 py-3 rounded-lg hover:bg-purple-700 transition w-full"
             disabled={isUpdating}
-            className="w-full py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition"
           >
             {isUpdating ? "Updating..." : "Save Changes"}
           </button>

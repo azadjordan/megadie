@@ -174,30 +174,55 @@ const toggleOrderDebt = asyncHandler(async (req, res) => {
 // @route   POST /api/orders
 // @access  Private (Logged-in users only)
 const createOrder = asyncHandler(async (req, res) => {
-    const { orderItems, totalPrice, note } = req.body;
-
+    const { orderItems, note } = req.body;
+  
     if (!orderItems || orderItems.length === 0) {
-        res.status(400);
-        throw new Error("No order items");
+      res.status(400);
+      throw new Error("No order items");
     }
-
+  
+    let totalPrice = 0;
+  
+    const updatedOrderItems = await Promise.all(
+      orderItems.map(async (item) => {
+        const product = await Product.findById(item.product);
+  
+        if (!product) {
+          res.status(404);
+          throw new Error(`Product not found: ${item.product}`);
+        }
+  
+        const itemTotal = item.price * item.qty;
+        totalPrice += itemTotal;
+  
+        return {
+          product: product._id,
+          qty: item.qty,
+          price: item.price,
+        };
+      })
+    );
+  
     const order = new Order({
-        user: req.user._id,
-        orderItems,
-        shippingAddress: req.user.address,
-        totalPrice,
-        note, // ✅ Save note in database
+      user: req.user._id,
+      orderItems: updatedOrderItems,
+      shippingAddress: req.user.address,
+      totalPrice,
+      note,
     });
-
+  
     const createdOrder = await order.save();
     res.status(201).json(createdOrder);
-});
+  });
+  
 
 // @desc    Get order by ID (Owner/Admin)
 // @route   GET /api/orders/:id
 // @access  Private (Only the order owner or an admin)
 const getOrderById = asyncHandler(async (req, res) => {
-    const order = await Order.findById(req.params.id).populate("user", "name email phone");
+    const order = await Order.findById(req.params.id)
+        .populate("user", "name email phoneNumber") // ✅ Keep it simple
+        .populate("orderItems.product", "name images"); // ✅ Get full `images` array
 
     if (!order) {
         res.status(404);
@@ -206,12 +231,15 @@ const getOrderById = asyncHandler(async (req, res) => {
 
     // ✅ Only the order owner OR an admin can access the order
     if (order.user._id.toString() === req.user._id.toString() || req.user.isAdmin) {
-        res.json(order);
+        res.json(order); // ✅ Send the response as is
     } else {
-        res.status(403); // ❌ Forbidden for unauthorized users
+        res.status(403);
         throw new Error("Not authorized to view this order");
     }
 });
+
+
+
 
 // @desc    Get logged-in user's orders
 // @route   GET /api/orders/myorders
@@ -229,7 +257,7 @@ const getAllOrders = asyncHandler(async (req, res) => {
     res.json(orders);
 });
 
-// @desc    Toggle order payment status (Admin only)
+// @desc    Toggle order payment status and update User wallet and outstandingBalance (Admin only)
 // @route   PUT /api/orders/:id/toggle-pay
 // @access  Private/Admin
 const toggleOrderPaymentStatus = asyncHandler(async (req, res) => {
@@ -238,19 +266,67 @@ const toggleOrderPaymentStatus = asyncHandler(async (req, res) => {
         throw new Error("Not authorized to update payment status");
     }
 
-    const order = await Order.findById(req.params.id);
+    const order = await Order.findById(req.params.id).populate("user");
 
-    if (order) {
-        order.isPaid = !order.isPaid; // Toggle payment status
-        order.paidAt = order.isPaid ? Date.now() : null; // Set or clear payment date
-
-        const updatedOrder = await order.save();
-        res.json(updatedOrder);
-    } else {
+    if (!order) {
         res.status(404);
         throw new Error("Order not found");
     }
+
+    const user = order.user;
+
+    if (!user) {
+        res.status(404);
+        throw new Error("User not found");
+    }
+
+    const orderTotal = order.totalPrice; // Ensure this is a number
+    let message = "";
+
+    if (!order.isPaid) {
+        // ✅ Check if the wallet covers the total price
+        if (user.wallet < orderTotal) {
+            res.status(400);
+            throw new Error("Insufficient wallet balance to mark order as paid");
+        }
+
+        // Deduct order total from wallet
+        user.wallet -= orderTotal;
+
+        // Reduce outstanding balance if applicable
+        if (user.outstandingBalance > 0) {
+            const amountAppliedToDebt = Math.min(orderTotal, user.outstandingBalance);
+            user.outstandingBalance -= amountAppliedToDebt;
+        }
+
+        order.isPaid = true;
+        order.paidAt = Date.now();
+
+        message = `Paid (Wallet and Debt Decreased)`;
+    } else {
+        // ✅ Marking as unpaid (Refund to wallet and restore outstanding balance)
+        user.wallet += orderTotal;
+        user.outstandingBalance += orderTotal;
+
+        order.isPaid = false;
+        order.paidAt = null;
+
+        message = `Not Paid (Wallet and Debt Increased)`;
+    }
+
+    // ✅ Save changes
+    await user.save();
+    const updatedOrder = await order.save();
+
+    res.status(200).json({
+        message,
+        updatedOrder,
+        walletBalance: user.wallet,
+        outstandingBalance: user.outstandingBalance,
+    });
 });
+
+
 
 // @desc    Update order status (Admin only)
 // @route   PUT /api/orders/:id/status
