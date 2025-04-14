@@ -2,7 +2,8 @@ import { Outlet, NavLink } from "react-router-dom";
 
 const AccountDashboard = () => {
   return (
-    <div className="container mx-auto flex flex-col md:flex-row gap-8 min-h-screen mt-18">
+    <div className="container mx-auto flex flex-col md:flex-row gap-8 min-h-screen ">
+      hi
       {/* ✅ Sidebar Panel */}
       <aside className="w-full md:w-1/4 bg-white rounded-lg shadow-md p-5 flex flex-col items-start">
         <h3 className="text-xl font-bold text-gray-800 pb-3 border-b w-full">My Account</h3>

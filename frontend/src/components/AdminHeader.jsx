@@ -7,13 +7,16 @@ const AdminHeader = () => {
   if (!userInfo?.isAdmin) return null; // ✅ Only show if admin is logged in
 
   return (
-    <div className="bg-purple-900 text-white shadow-md py-2 w-full z-40">
-      <nav className="container mx-auto flex justify-center md:justify-between items-center px-6">
-        <h3 className="text-lg font-semibold text-purple-400 text-nowrap hidden md:block">
+<div className="sticky top-[68px] z-40 bg-purple-900 text-white shadow-md py-2 w-full">
+<div className="overflow-x-auto">
+
+<nav className="container mx-auto flex justify-center md:justify-between items-center px-6">
+
+        <h3 className="text-lg font-semibold text-purple-400 hidden lg:block">
           Hi, {userInfo.name || "Admin"}! 👋
         </h3>
-        <div className="flex flex-nowrap justify-center space-x-2">
-          <NavLink
+        <div className="flex flex-wrap justify-center">
+        <NavLink
             to="/admin/quotes"
             className={({ isActive }) =>
               `px-4 py-1 rounded-lg text-sm font-medium transition ${
@@ -85,6 +88,8 @@ const AdminHeader = () => {
           </NavLink>
         </div>
       </nav>
+      </div>
+
     </div>
   );
 };

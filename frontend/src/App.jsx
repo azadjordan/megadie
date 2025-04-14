@@ -29,12 +29,15 @@ import ScrollToTopButton from "./components/ScrollToTopButton";
 import PaymentEdit from "./pages/PaymentEdit";
 import Shop from "./pages/Shop";
 import CategoryList from "./pages/CategoryList";
+import CategoryUpdate from "./pages/CategoryUpdate";
 import QuoteList from "./pages/QuoteList";
 import InvoiceList from "./pages/InvoiceList";
+import AdminHeader from "./components/AdminHeader"; // ✅ Admin Navigation
+
 
 const App = () => {
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50 pt-[60px]">
+    <div className="min-h-screen flex flex-col bg-gray-50">
       {/* ✅ ToastContainer placed above everything */}
       <ToastContainer
         position="top-right"
@@ -50,6 +53,7 @@ const App = () => {
       />
 
       <Header />
+      <AdminHeader />
 
       <main className="container mx-auto flex-grow">
         <Routes>
@@ -80,6 +84,7 @@ const App = () => {
             <Route path="/admin/orders" element={<OrderList />} />
             <Route path="/admin/products" element={<ProductList />} />
             <Route path="/admin/categories" element={<CategoryList />} />
+            <Route path="/admin/categories/:id/edit" element={<CategoryUpdate />} />
             <Route path="/admin/users" element={<UserList />} />
             <Route path="/admin/quotes" element={<QuoteList />} />
             <Route path="/admin/invoices" element={<InvoiceList />} />

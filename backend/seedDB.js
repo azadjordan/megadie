@@ -4,7 +4,7 @@ import { fileURLToPath } from "url";
 import mongoose from "mongoose";
 import connectDB from "./config/db.js";
 import Product from "./models/productModel.js";
-import Subcategory from "./models/subcategoryModel.js";
+import Subcategory from "./models/categoryModel.js";
 
 // Load env variables
 const __filename = fileURLToPath(import.meta.url);

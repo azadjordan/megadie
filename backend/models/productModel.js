@@ -34,7 +34,7 @@ const productSchema = new mongoose.Schema(
 
     color: {
       type: String,
-      default: "default",
+      default: "no-color",
     },
 
     code: {

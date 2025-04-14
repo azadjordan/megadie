@@ -1,30 +1,49 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
-  selectedCategory: null, // Immediately updates
-  selectedSubcategories: [], // Updates only when "Apply Filters" is clicked
-  selectedAttributes: {}, // Stores selected attribute options per filter
+  selectedProductType: null,
+  selectedCategoryIds: [],
+  selectedAttributes: {}, // e.g., { color: ["Red"], width: ["1-inch"] }
 };
 
 const filtersSlice = createSlice({
   name: "filters",
   initialState,
   reducers: {
-    setCategory: (state, action) => {
-      state.selectedCategory = action.payload;
-      state.selectedSubcategories = []; // Reset subcategories
-      state.selectedAttributes = {}; // Reset attributes
-    },
-    applyFilters: (state, action) => {
-      state.selectedSubcategories = action.payload.subcategories;
-      state.selectedAttributes = action.payload.attributes;
-    },
-    resetFilters: (state) => {
-      state.selectedSubcategories = [];
+    setProductType: (state, action) => {
+      state.selectedProductType = action.payload;
+      state.selectedCategoryIds = [];      // ✅ Reset when product type changes
       state.selectedAttributes = {};
     },
+    setCategoryId: (state, action) => {
+      const id = action.payload;
+      let updatedIds;
+
+      if (state.selectedCategoryIds.includes(id)) {
+        updatedIds = state.selectedCategoryIds.filter(cid => cid !== id);
+      } else {
+        updatedIds = [...state.selectedCategoryIds, id];
+      }
+
+      state.selectedCategoryIds = updatedIds;
+      state.selectedAttributes = {}; // ✅ Reset attributes on category change
+    },
+    toggleAttributeValue: (state, action) => {
+      const { key, value } = action.payload;
+      const current = state.selectedAttributes[key] || [];
+      state.selectedAttributes[key] = current.includes(value)
+        ? current.filter(v => v !== value)
+        : [...current, value];
+    },
+    resetFilters: () => initialState,
   },
 });
 
-export const { setCategory, applyFilters, resetFilters } = filtersSlice.actions;
+export const {
+  setProductType,
+  setCategoryId,
+  toggleAttributeValue,
+  resetFilters,
+} = filtersSlice.actions;
+
 export default filtersSlice.reducer;

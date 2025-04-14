@@ -1,83 +1,49 @@
-import { PRODUCTS_URL } from '../constants';
-import apiSlice from './apiSlice';
+import { PRODUCTS_URL } from "../constants";
+import apiSlice from "./apiSlice";
 
 export const productsApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    // ✅ Fetch all products (filtered)
+    // ✅ Get all products (with longer cache duration)
     getProducts: builder.query({
-      query: (filters = {}) => {
-        const { category = null, subcategories = [], attributes = {} } = filters; // ✅ Safe destructuring
-    
-        const params = new URLSearchParams();
-    
-        if (category) params.append("category", category);
-        subcategories.forEach((sub) => params.append("subcategories", sub));
-    
-        Object.entries(attributes).forEach(([key, values]) => {
-          values.forEach((value) => params.append(`attributes[${key}]`, value));
-        });
-    
-        return `${PRODUCTS_URL}?${params.toString()}`;
-      },
-      providesTags: (result, error, filters) => [{ type: "Product", id: filters?.category || "ALL" }],
+      query: () => PRODUCTS_URL,
+      providesTags: ["Product"],
+      keepUnusedDataFor: 300, // ⏳ Cache stays for 5 minutes
     }),
-    
-    
 
-    // ✅ Fetch a single product by ID with subcategory details
+    // ✅ Get product by ID (also keep cached for 5 mins)
     getProductById: builder.query({
       query: (id) => `${PRODUCTS_URL}/${id}`,
-      providesTags: (result, error, id) => [{ type: 'Product', id }],
-      keepUnusedDataFor: 60, // Cache data for 1 minute
+      providesTags: (result, error, id) => [{ type: "Product", id }],
+      keepUnusedDataFor: 300,
     }),
 
-    // ✅ Add a new product
-    addProduct: builder.mutation({
-      query: (newProduct) => ({
+    // ✅ Create a new product
+    createProduct: builder.mutation({
+      query: (data) => ({
         url: PRODUCTS_URL,
-        method: 'POST',
-        body: {
-          ...newProduct,
-          attributes: {
-            t1: newProduct.attributes?.t1 || "",
-            t2: newProduct.attributes?.t2 || "",
-            t3: newProduct.attributes?.t3 || "",
-            d1: newProduct.attributes?.d1 || "",
-            d2: newProduct.attributes?.d2 || "",
-            d3: newProduct.attributes?.d3 || "",
-          },
-        },
+        method: "POST",
+        body: data,
       }),
-      invalidatesTags: ['Product'], // Ensures fresh data after adding
+      invalidatesTags: ["Product"],
     }),
 
     // ✅ Update an existing product
     updateProduct: builder.mutation({
-      query: ({ id, ...updatedData }) => ({
+      query: ({ id, ...data }) => ({
         url: `${PRODUCTS_URL}/${id}`,
-        method: 'PUT',
-        body: {
-          ...updatedData,
-          attributes: {
-            t1: updatedData.attributes?.t1 ?? "",
-            t2: updatedData.attributes?.t2 ?? "",
-            t3: updatedData.attributes?.t3 ?? "",
-            d1: updatedData.attributes?.d1 ?? "",
-            d2: updatedData.attributes?.d2 ?? "",
-            d3: updatedData.attributes?.d3 ?? "",
-          },
-        },
+        method: "PUT",
+        body: data,
       }),
-      invalidatesTags: (result, error, { id }) => [{ type: 'Product', id }], // Ensures fresh data for updated product
+      invalidatesTags: (result, error, { id }) => [{ type: "Product", id }],
     }),
 
     // ✅ Delete a product
     deleteProduct: builder.mutation({
       query: (id) => ({
         url: `${PRODUCTS_URL}/${id}`,
-        method: 'DELETE',
+        method: "DELETE",
       }),
-      invalidatesTags: ['Product'], // Ensures fresh data after deleting
+      invalidatesTags: ["Product"],
     }),
   }),
 });
@@ -85,7 +51,7 @@ export const productsApiSlice = apiSlice.injectEndpoints({
 export const {
   useGetProductsQuery,
   useGetProductByIdQuery,
-  useAddProductMutation,
+  useCreateProductMutation,
   useUpdateProductMutation,
   useDeleteProductMutation,
 } = productsApiSlice;

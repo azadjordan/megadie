@@ -77,7 +77,7 @@ const Product = () => {
   ].filter(Boolean);
 
   return (
-    <div className="container mx-auto py-12 px-6 mt-10">
+    <div className="container mx-auto px-6 ">
       {/* ✅ Back to Shop Button */}
       <Link
         to="/shop"

@@ -4,7 +4,6 @@ import { FaShoppingCart, FaUser, FaBars, FaTimes, FaSignOutAlt, FaStore } from "
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../slices/authSlice";
 import { clearCart } from "../slices/cartSlice";
-import AdminHeader from "./AdminHeader"; // ✅ Admin Navigation
 
 const Header = () => {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -13,10 +12,6 @@ const Header = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [bounce, setBounce] = useState(false); // 🔥 State to track animation trigger
-
-  const headerRef = useRef(null);
-  const adminHeaderRef = useRef(null);
-  const [totalHeaderHeight, setTotalHeaderHeight] = useState(0);
 
   // Detect quantity change and trigger animation
   useEffect(() => {
@@ -38,24 +33,11 @@ const Header = () => {
     });
   };
 
-  // Calculate total header height (Main Header + Admin Header)
-  useEffect(() => {
-    const updateHeaderHeight = () => {
-      const mainHeaderHeight = headerRef.current?.offsetHeight || 0;
-      const adminHeaderHeight = adminHeaderRef.current?.offsetHeight || 0;
-      setTotalHeaderHeight(mainHeaderHeight + adminHeaderHeight);
-    };
-
-    updateHeaderHeight();
-    window.addEventListener("resize", updateHeaderHeight);
-    return () => window.removeEventListener("resize", updateHeaderHeight);
-  }, []);
-
   return (
     <>
       {/* ✅ Fixed Main Header */}
-      <header ref={headerRef} className="fixed top-0 left-0 w-full z-50 bg-white shadow-lg">
-        <nav className="container mx-auto flex justify-between items-center py-4 px-6">
+      <header className="sticky top-0 z-50 bg-white shadow-md">
+      <nav className="container mx-auto flex justify-between items-center py-4 px-6">
           <Link to="/" className="text-3xl font-bold text-purple-500 hover:text-purple-600 transition">
             Megadie.com
           </Link>
@@ -84,15 +66,6 @@ const Header = () => {
         )}
       </header>
 
-      {/* ✅ Fixed Admin Header (if Admin is logged in) */}
-      <div ref={adminHeaderRef}>
-        <AdminHeader />
-      </div>
-
-      {/* ✅ Apply Dynamic Padding to Prevent Content Overlap */}
-      <div style={{ paddingTop: `${totalHeaderHeight}px` }}>
-        {/* Page Content Starts Here */}
-      </div>
     </>
   );
 };

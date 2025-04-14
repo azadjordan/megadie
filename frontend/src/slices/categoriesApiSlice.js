@@ -1,58 +1,49 @@
+import { CATEGORIES_URL } from "../constants";
 import { apiSlice } from "./apiSlice";
-import { CATEGORIES_URL } from "../constants.js";
 
 export const categoriesApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    // ✅ Fetch all categories
+    // Fetch all categories
     getCategories: builder.query({
-      query: () => ({
-        url: CATEGORIES_URL,
-        method: "GET",
-        credentials: "include",
-      }),
-      providesTags: ["Categories"],
+      query: () => CATEGORIES_URL,
+      providesTags: ["Category"],
+      keepUnusedDataFor: 300,
     }),
 
-    // ✅ Fetch a category by ID
+    // Fetch category by ID
     getCategoryById: builder.query({
-      query: (id) => ({
-        url: `${CATEGORIES_URL}/${id}`,
-        method: "GET",
-        credentials: "include",
-      }),
+      query: (id) => `${CATEGORIES_URL}/${id}`,
       providesTags: (result, error, id) => [{ type: "Category", id }],
+      keepUnusedDataFor: 300,
     }),
 
-    // ✅ Create a new category (Admin only)
+    // Create category
     createCategory: builder.mutation({
       query: (data) => ({
         url: CATEGORIES_URL,
         method: "POST",
         body: data,
-        credentials: "include",
       }),
-      invalidatesTags: ["Categories"],
+      invalidatesTags: ["Category"],
     }),
 
-    // ✅ Update an existing category (Admin only)
+    // Update category
     updateCategory: builder.mutation({
-      query: ({ id, ...updatedData }) => ({
+      query: ({ id, ...data }) => ({
         url: `${CATEGORIES_URL}/${id}`,
         method: "PUT",
-        body: updatedData,
-        credentials: "include",
+        body: data,
       }),
-      invalidatesTags: ["Category", "Categories"],
+      invalidatesTags: (result, error, { id }) => [{ type: "Category", id }],
     }),
 
-    // ✅ Delete a category (Admin only)
+    // Delete category
     deleteCategory: builder.mutation({
       query: (id) => ({
         url: `${CATEGORIES_URL}/${id}`,
         method: "DELETE",
-        credentials: "include",
       }),
-      invalidatesTags: ["Categories"],
+      invalidatesTags: ["Category"],
     }),
   }),
 });

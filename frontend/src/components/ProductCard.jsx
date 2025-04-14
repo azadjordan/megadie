@@ -1,97 +1,85 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { FaPlus, FaMinus, FaShoppingCart, FaCheck } from "react-icons/fa";
-import { useDispatch } from "react-redux"; // ✅ Import useDispatch
+import { useDispatch } from "react-redux";
 import { addToCart } from "../slices/cartSlice";
 
 const ProductCard = ({ product }) => {
-  const dispatch = useDispatch(); // ✅ Use Redux dispatch
-  const [quantity, setQuantity] = useState(1);
-  const [isAdded, setIsAdded] = useState(false); // ✅ State to track button feedback
+  const dispatch = useDispatch();
+  const [quantity, setQuantity] = useState(product.moq || 1);
+  const [isAdded, setIsAdded] = useState(false);
 
-  // ✅ Extract Dimensional & Textual Attributes
-  const sizeAttributes = [product?.attributes?.d1, product?.attributes?.d2, product?.attributes?.d3]
-    .filter(Boolean)
-    .join(" x ");
-  const textAttributes = [product?.attributes?.t1, product?.attributes?.t2, product?.attributes?.t3]
-    .filter(Boolean)
-    .join(" | ");
-
-  // ✅ Handle Quantity Change
   const handleQuantityChange = (delta) => {
-    setQuantity((prev) => Math.max(1, prev + delta)); // Prevents going below 1
+    setQuantity((prev) => Math.max(product.moq || 1, prev + delta));
   };
 
-  // ✅ Handle Add to Cart
   const handleAddToCart = () => {
-    dispatch(addToCart({ ...product, quantity })); // ✅ Dispatch Redux action
-    setQuantity(1); // ✅ Reset quantity to 1
-
-    // ✅ Show "Added" state for 2 seconds
+    dispatch(addToCart({ ...product, quantity }));
     setIsAdded(true);
-    setTimeout(() => {
-      setIsAdded(false);
-    }, 800);
+    setTimeout(() => setIsAdded(false), 800);
+    setQuantity(product.moq || 1);
   };
+
+  const displaySpecs = product.displaySpecs || "";
+  const image = product.images?.[0] || "/placeholder.jpg";
 
   return (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden transition-transform hover:scale-105 hover:shadow-lg flex flex-col h-full relative">
+    <div className="bg-white rounded-lg shadow-md overflow-hidden flex flex-col hover:shadow-xl transition h-full">
       {/* ✅ Product Image */}
-      <Link to={`/product/${product._id}`} className="block">
-        <img
-          src={product.images?.length > 0 ? product.images[0] : "/placeholder.jpg"}
-          alt={product.name}
-          className="w-full h-56 object-cover"
-        />
+      <Link to={`/product/${product._id}`}>
+        <img src={image} alt={product.name} className="h-48 w-full object-cover" />
       </Link>
 
-      {/* ✅ Product Details */}
+      {/* ✅ Details Section */}
       <div className="p-4 flex flex-col flex-grow">
         <Link to={`/product/${product._id}`}>
-          <h3 className="text-lg font-semibold text-gray-900 hover:text-purple-500 transition">
+          <h3 className="text-md font-semibold text-gray-800 hover:text-purple-600">
             {product.name}
           </h3>
         </Link>
 
-        {/* ✅ Display Size and Textual Attributes */}
-        {(sizeAttributes || textAttributes) && (
-          <p className="text-gray-600 text-sm mt-2 line-clamp-2 flex-grow">
-            {sizeAttributes && <span className="font-medium">{sizeAttributes}</span>}
-            {sizeAttributes && textAttributes && " | "}
-            {textAttributes}
-          </p>
+        {displaySpecs && (
+          <p className="text-sm text-gray-600 mt-1 line-clamp-2">{displaySpecs}</p>
+        )}
+
+        <div className="mt-3 text-sm text-gray-700">
+          <span className="font-bold">{product.price.toFixed(2)} AED</span> / {product.unit}
+        </div>
+
+        <div className="mt-1 text-xs text-gray-500">
+          MOQ: {product.moq} &middot; Stock: {product.stock}
+        </div>
+
+        {!product.isAvailable && (
+          <p className="text-red-500 text-xs mt-2 font-medium">Not Available</p>
         )}
       </div>
 
-      {/* ✅ Bottom Section: Quantity Controls + Cart Button */}
-      <div className="p-4 flex items-center justify-between">
-        {/* 🔹 Quantity Selector (Bottom-Left) */}
+      {/* ✅ Bottom Section: Quantity + Add to Cart */}
+      <div className="p-4 pt-0 flex items-center justify-between">
         <div className="flex items-center bg-gray-100 px-3 py-1 rounded-lg border border-gray-300">
           <button
             onClick={() => handleQuantityChange(-1)}
-            disabled={quantity === 1}
-            className="p-1 text-gray-500 hover:text-purple-500 disabled:opacity-50 cursor-pointer"
+            disabled={quantity <= (product.moq || 1)}
+            className="p-1 text-gray-500 hover:text-purple-600 disabled:opacity-40"
           >
             <FaMinus size={12} />
           </button>
-
           <span className="text-sm font-semibold mx-2">{quantity}</span>
-
           <button
             onClick={() => handleQuantityChange(1)}
-            className="p-1 text-gray-500 hover:text-purple-500 cursor-pointer"
+            className="p-1 text-gray-500 hover:text-purple-600"
           >
             <FaPlus size={12} />
           </button>
         </div>
 
-        {/* 🔹 Add to Cart Button (Bottom-Right) */}
         <button
-        disabled={!product?.isAvailable || isAdded}
+          disabled={!product.isAvailable || isAdded}
           onClick={handleAddToCart}
-          className={`p-2 rounded-full cursor-pointer flex items-center justify-center shadow-md transition ${
+          className={`p-2 rounded-full shadow-md transition flex items-center justify-center ${
             isAdded
-              ? "bg-green-500 text-white" // ✅ Show success feedback
+              ? "bg-green-500 text-white"
               : "bg-purple-500 text-white hover:bg-purple-600"
           }`}
         >
