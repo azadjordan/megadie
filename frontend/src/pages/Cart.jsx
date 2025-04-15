@@ -1,131 +1,109 @@
-import { useSelector, useDispatch } from "react-redux";
-import { useNavigate, Link } from "react-router-dom";
-import { removeFromCart, updateQuantity, clearCart } from "../slices/cartSlice";
-import { FaPlus, FaMinus, FaShoppingCart, FaTrash } from "react-icons/fa";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  removeFromCart,
+  updateQuantity,
+  clearCart,
+} from "../slices/cartSlice";
+import { useCreateQuoteMutation } from "../slices/quotesApiSlice";
+import { FaTrash, FaMinus, FaPlus } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
 const Cart = () => {
-  const { cartItems, totalPrice } = useSelector((state) => state.cart);
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+  const cart = useSelector((state) => state.cart);
+  const [createQuote, { isLoading }] = useCreateQuoteMutation();
+
+  const handleQuantityChange = (_id, value) => {
+    const quantity = parseInt(value);
+    if (!isNaN(quantity) && quantity > 0) {
+      dispatch(updateQuantity({ _id, quantity }));
+    }
+  };
+
+  const handleSubmitQuote = async () => {
+    try {
+      await createQuote({
+        requestedItems: cart.cartItems.map((item) => ({
+          product: item._id,
+          qty: item.quantity,
+          unitPrice: item.price,
+          totalPrice: item.price * item.quantity,
+        })),
+      }).unwrap();
+
+      dispatch(clearCart());
+      navigate("/quotes/quote-success");
+    } catch (error) {
+      console.error("Failed to request quote:", error);
+    }
+  };
 
   return (
-    <div className="container mx-auto px-6 py-12 pt-[110px]">
-      
-      {/* ✅ Back to Shop Button */}
-      <Link
-        to="/shop"
-        className="inline-flex items-center gap-2 bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300 transition mb-6"
-        >
-        ← Back to Shop
-      </Link>
+    <div className="max-w-4xl mx-auto px-4 py-8">
+      <h2 className="text-2xl font-semibold text-purple-700 mb-6">Your Quote Cart</h2>
 
-      {/* ✅ Cart Header */}
-      <div className="flex items-center justify-between text-gray-800 pb-4 border-b">
-        <h2 className="text-3xl font-bold flex items-center gap-2">
-          <FaShoppingCart className="text-purple-500" /> Shopping Cart
-        </h2>
-      </div>
-
-      {/* ✅ Empty Cart State */}
-      {cartItems.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 text-center">
-          <p className="text-lg text-gray-500">Your cart is empty.</p>
-          <Link
-            to="/shop"
-            className="mt-5 bg-purple-500 text-white px-6 py-3 rounded-lg font-medium shadow-md hover:bg-purple-600 transition"
-          >
-            Start Shopping
-          </Link>
-        </div>
+      {cart.cartItems.length === 0 ? (
+        <p className="text-gray-600">Your cart is empty.</p>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-6">
-          
-          {/* ✅ Cart Items Section */}
-          <div className="md:col-span-2 bg-white p-6 shadow-md rounded-lg">
-            {cartItems.map((item) => (
-              <div key={item._id} className="flex items-center py-5 border-b border-gray-200 last:border-none">
-                
-                {/* ❌ Remove Button */}
-                <button
-                  onClick={() => dispatch(removeFromCart(item._id))}
-                  className="text-gray-400 hover:text-red-500 text-xl px-2 cursor-pointer"
-                >
-                  ×
-                </button>
+        <>
+          <table className="w-full text-sm border rounded mb-6">
+            <thead className="bg-gray-100 text-gray-700">
+              <tr>
+                <th className="p-3 text-left">Product</th>
+                <th className="p-3 text-left">Quantity</th>
+                <th className="p-3 text-left">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {cart.cartItems.map((item) => (
+                <tr key={item._id} className="border-t">
+                  <td className="p-3">{item.name}</td>
+                  <td className="p-3 flex items-center gap-2">
+                    <button onClick={() => dispatch(updateQuantity({ _id: item._id, quantity: item.quantity - 1 }))}>
+                      <FaMinus className="text-gray-600 hover:text-purple-600" />
+                    </button>
+                    <input
+                      type="number"
+                      value={item.quantity}
+                      onChange={(e) => handleQuantityChange(item._id, e.target.value)}
+                      className="w-16 text-center border rounded px-2 py-1"
+                      min="1"
+                    />
+                    <button onClick={() => dispatch(updateQuantity({ _id: item._id, quantity: item.quantity + 1 }))}>
+                      <FaPlus className="text-gray-600 hover:text-purple-600" />
+                    </button>
+                  </td>
+                  <td className="p-3">
+                    <button
+                      onClick={() => dispatch(removeFromCart(item._id))}
+                      className="text-red-600 hover:text-red-800"
+                    >
+                      <FaTrash />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
 
-                {/* 🖼️ Product Image */}
-                <img src={item.image} alt={item.name} className="w-16 h-16 rounded-md object-cover" />
+          <div className="flex justify-between items-center">
+            <button
+              onClick={() => dispatch(clearCart())}
+              className="bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300 text-sm"
+            >
+              Clear Cart
+            </button>
 
-                {/* 📌 Product Details */}
-                <div className="flex flex-col flex-grow px-4">
-                  <h2 className="text-lg font-semibold text-gray-900">{item.name}</h2>
-                  <p className="text-gray-600 text-sm">${item.price.toFixed(2)} × {item.quantity}</p>
-                  <p className="text-gray-900 font-bold text-lg">= ${ (item.price * item.quantity).toFixed(2) }</p>
-                </div>
-
-                {/* 🔢 Quantity Controls */}
-                <div className="flex items-center gap-3 bg-gray-100 px-4 py-2 rounded-lg border border-gray-300">
-                  <button
-                    onClick={() => dispatch(updateQuantity({ _id: item._id, quantity: item.quantity - 1 }))}
-                    disabled={item.quantity === 1}
-                    className="p-3 text-gray-500 hover:text-purple-500 disabled:opacity-50 cursor-pointer"
-                  >
-                    <FaMinus size={18} />
-                  </button>
-                  <span className="text-lg font-semibold">{item.quantity}</span>
-                  <button
-                    onClick={() => dispatch(updateQuantity({ _id: item._id, quantity: item.quantity + 1 }))}
-                    className="p-3 text-gray-500 hover:text-purple-500 cursor-pointer"
-                  >
-                    <FaPlus size={18} />
-                  </button>
-                </div>
-              </div>
-            ))}
-
-            {/* ✅ Clear Cart Button */}
-            <div className="flex justify-end mt-4">
-              <button
-                onClick={() => dispatch(clearCart())}
-                className="flex items-center gap-2 text-red-500 text-md font-semibold transition hover:text-red-600"
-              >
-                <FaTrash size={18} />
-                <span>Clear Cart</span>
-              </button>
-            </div>
+            <button
+              onClick={handleSubmitQuote}
+              disabled={isLoading}
+              className="bg-purple-600 text-white px-6 py-2 rounded hover:bg-purple-700 transition"
+            >
+              {isLoading ? "Submitting..." : "Request Quote"}
+            </button>
           </div>
-
-          {/* ✅ Checkout Summary */}
-          <div className="bg-white p-6 shadow-md rounded-lg flex flex-col">
-            <h3 className="text-2xl font-bold text-gray-900 mb-4">Order Summary</h3>
-            <div className="flex justify-between text-lg font-medium text-gray-800 border-b pb-2">
-              <span>Items in Cart:</span>
-              <span>{totalItems}</span>
-            </div>
-            <div className="flex justify-between text-2xl font-bold text-purple-600 mt-4">
-              <span>Total:</span>
-              <span>${totalPrice.toFixed(2)}</span>
-            </div>
-
-            {/* ✅ Buttons - Proceed to Checkout & Continue Shopping */}
-            <div className="flex flex-col gap-3 mt-6">
-              <button
-                onClick={() => navigate("/place-order")}
-                className="w-full bg-purple-500 text-white text-lg py-3 rounded-lg font-semibold hover:bg-purple-600 transition"
-              >
-                Proceed to Checkout
-              </button>
-              <Link
-                to="/shop"
-                className="text-center text-gray-700 hover:text-purple-500 transition"
-              >
-                Continue Shopping
-              </Link>
-            </div>
-          </div>
-
-        </div>
+        </>
       )}
     </div>
   );

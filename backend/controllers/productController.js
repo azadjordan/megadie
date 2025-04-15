@@ -6,8 +6,6 @@ import asyncHandler from "../middleware/asyncHandler.js";
 // @access  Private/Admin
 const getProductsAdmin = async (req, res) => {
   const { productType, categoryIds } = req.query;
-  console.log("[GET /api/products/admin] Query:", req.query);
-
   const filter = {};
 
   if (productType) {
@@ -28,9 +26,7 @@ const getProductsAdmin = async (req, res) => {
       };
     }
   }
-
-  console.log("[Admin Filter]:", filter);
-
+  
   const products = await Product.find(filter)
     .populate("category", "name displayName productType") // ✅ helpful for admin UI
     .sort({ createdAt: -1 });
@@ -43,8 +39,6 @@ const getProductsAdmin = async (req, res) => {
 // @access  Public
 const getProducts = async (req, res) => {
   const { productType, categoryIds } = req.query;
-  console.log("[GET /api/products] Query:", req.query);
-
   const filter = {};
 
   if (productType) filter.productType = productType;

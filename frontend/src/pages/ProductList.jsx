@@ -1,15 +1,21 @@
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import { useGetProductsAdminQuery } from "../slices/productsApiSlice";
+import {
+  useGetProductsAdminQuery,
+  useCreateProductMutation,
+  useDeleteProductMutation,
+} from "../slices/productsApiSlice";
 import { Link } from "react-router-dom";
-import { FaEdit, FaTrash } from "react-icons/fa";
+import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
 import AdminProductFilters from "../components/AdminProductFilters";
 
 const ProductList = () => {
   const { selectedProductType, selectedCategoryIds, selectedAttributes } =
     useSelector((state) => state.adminFilters);
 
-  const [page] = useState(1); // You can extend pagination later
+  const [page] = useState(1);
+  const [createProduct] = useCreateProductMutation();
+  const [deleteProduct] = useDeleteProductMutation();
 
   const {
     data: products = [],
@@ -26,18 +32,69 @@ const ProductList = () => {
     refetch();
   }, [selectedProductType, selectedCategoryIds, selectedAttributes, refetch]);
 
+  const handleCreateProduct = async () => {
+    try {
+      if (!selectedCategoryIds.length) {
+        alert("Please select a category first.");
+        return;
+      }
+
+      await createProduct({
+        name: "Sample Product",
+        productType: selectedProductType || "Ribbon",
+        category: selectedCategoryIds[0],
+        size: "1-inch",
+        color: "Red",
+        code: `CODE-${Math.floor(Math.random() * 10000)}`,
+        displaySpecs: "Red | 1-inch",
+        stock: 100,
+        moq: 5,
+        isAvailable: true,
+        origin: "China",
+        storageLocation: "Warehouse A - Shelf 1",
+        price: 10.5,
+        unit: "roll",
+        images: [],
+        description: "This is a sample product.",
+      }).unwrap();
+      refetch();
+    } catch (err) {
+      console.error("❌ Failed to create product", err);
+      alert("Failed to create product. Check console for details.");
+    }
+  };
+
+  const handleDeleteProduct = async (id) => {
+    const confirmDelete = window.confirm("Are you sure you want to delete this product?");
+    if (!confirmDelete) return;
+
+    try {
+      await deleteProduct(id).unwrap();
+      refetch();
+    } catch (err) {
+      console.error("❌ Failed to delete product", err);
+      alert("Failed to delete product. Check console for details.");
+    }
+  };
+
   return (
     <div className="flex flex-col md:flex-row gap-4 p-6 max-w-screen-xl mx-auto">
       {/* 🔹 Sidebar Filters */}
-      <aside className="w-full md:w-1/6">
+      <aside className="w-full md:w-1/5">
         <AdminProductFilters />
       </aside>
 
-      {/* 🔹 Product Table */}
-      <main className="w-full md:w-5/6">
-        <h2 className="text-2xl font-semibold text-purple-700 mb-4">
-          All Products
-        </h2>
+      {/* 🔹 Product Table Section */}
+      <main className="w-full md:w-4/5">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-2xl font-semibold text-purple-700">All Products</h2>
+          <button
+            onClick={handleCreateProduct}
+            className="inline-flex items-center gap-2 bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 transition text-sm"
+          >
+            <FaPlus /> Create Product
+          </button>
+        </div>
 
         {isLoading ? (
           <p className="text-gray-500">Loading products...</p>
@@ -76,7 +133,10 @@ const ProductList = () => {
                           <FaEdit />
                         </button>
                       </Link>
-                      <button className="text-red-600 hover:text-red-800">
+                      <button
+                        onClick={() => handleDeleteProduct(prod._id)}
+                        className="text-red-600 hover:text-red-800"
+                      >
                         <FaTrash />
                       </button>
                     </td>

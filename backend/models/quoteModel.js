@@ -21,8 +21,8 @@ const quoteSchema = new mongoose.Schema(
 
     status: {
       type: String,
-      enum: ["Pending", "Quoted", "Confirmed", "Rejected"],
-      default: "Pending",
+      enum: ["Requested", "Quoted", "Confirmed", "Rejected"],
+      default: "Requested",
     },
 
     adminToAdminNote: { type: String, default: "" },

@@ -18,15 +18,14 @@ import MyOrders from "./pages/MyOrders";
 import AdminRoute from "./components/AdminRoute";
 import OrderList from "./pages/OrderList";
 import ProductList from "./pages/ProductList";
-import UserList from "./pages/UserList"; // ✅ Import User List Page
-import User from "./pages/User"; // ✅ Import User Edit Page
+import UserList from "./pages/UserList";
 import EditOrderPrices from "./pages/EditOrderPrices"; // ✅ Import EditOrderPrices
 import OrderDetailsUser from "./pages/OrderDetailsUser";
 import MyPayments from "./pages/MyPayments";
 import PaymentList from "./pages/PaymentList";
 import CreatePayment from "./pages/CreatePayment";
 import ScrollToTopButton from "./components/ScrollToTopButton";
-import PaymentEdit from "./pages/PaymentEdit";
+import PaymentUpdate from "./pages/PaymentUpdate.jsx";
 import Shop from "./pages/Shop";
 import CategoryList from "./pages/CategoryList";
 import CategoryUpdate from "./pages/CategoryUpdate";
@@ -34,7 +33,9 @@ import QuoteList from "./pages/QuoteList";
 import InvoiceList from "./pages/InvoiceList";
 import AdminHeader from "./components/AdminHeader"; // ✅ Admin Navigation
 import ProductUpdate from "./pages/ProductUpdate.jsx";
-
+import UserUpdate from "./pages/UserUpdate.jsx";
+import QuoteSuccess from "./pages/QuoteSuccess.jsx";
+import QuoteUpdate from "./pages/QuoteUpdate.jsx";
 
 const App = () => {
   return (
@@ -78,27 +79,39 @@ const App = () => {
               path="/order-confirmation/:orderId"
               element={<OrderConfirmation />}
             />
+
+            <Route path="quotes/quote-success" element={<QuoteSuccess />} />
           </Route>
 
           {/* ✅ Admin Routes */}
           <Route element={<AdminRoute />}>
             <Route path="/admin/orders" element={<OrderList />} />
             <Route path="/admin/products" element={<ProductList />} />
-            <Route path="/admin/products/:id/edit" element={<ProductUpdate />} />
+            <Route
+              path="/admin/products/:id/edit"
+              element={<ProductUpdate />}
+            />
             <Route path="/admin/categories" element={<CategoryList />} />
-            <Route path="/admin/categories/:id/edit" element={<CategoryUpdate />} />
+            <Route
+              path="/admin/categories/:id/edit"
+              element={<CategoryUpdate />}
+            />
             <Route path="/admin/users" element={<UserList />} />
+            <Route path="/admin/users/:id/edit" element={<UserUpdate />} />
+
             <Route path="/admin/quotes" element={<QuoteList />} />
+            <Route path="/admin/quotes/:id/edit" element={<QuoteUpdate />} />
             <Route path="/admin/invoices" element={<InvoiceList />} />
-            <Route path="/admin/user/:id" element={<User />} />
             <Route
               path="/admin/order/edit-prices/:orderId"
               element={<EditOrderPrices />}
             />
             <Route path="/admin/payments" element={<PaymentList />} />
             <Route path="/admin/payments/create" element={<CreatePayment />} />
-            <Route path="/admin/payments/edit/:id" element={<PaymentEdit />} />
-
+            <Route
+              path="/admin/payments/:id/edit"
+              element={<PaymentUpdate />}
+            />
           </Route>
         </Routes>
       </main>

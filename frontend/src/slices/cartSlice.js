@@ -1,10 +1,14 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const loadCartFromStorage = () => {
-  const storedCart = localStorage.getItem("cart");
-  return storedCart
-    ? JSON.parse(storedCart)
-    : { cartItems: [], totalQuantity: 0, totalPrice: 0 };
+  try {
+    const storedCart = localStorage.getItem("cart");
+    return storedCart
+      ? JSON.parse(storedCart)
+      : { cartItems: [], totalQuantity: 0, totalPrice: 0 };
+  } catch {
+    return { cartItems: [], totalQuantity: 0, totalPrice: 0 };
+  }
 };
 
 const saveCartToStorage = ({ cartItems, totalQuantity, totalPrice }) => {
@@ -19,13 +23,11 @@ const cartSlice = createSlice({
   reducers: {
     addToCart: (state, action) => {
       const product = action.payload;
+      if (!product || !product._id || product.quantity <= 0) return;
 
-      if (!product || !product._id || !product.price || product.quantity <= 0) return;
-
-      const existingItem = state.cartItems.find((item) => item._id === product._id);
-
-      if (existingItem) {
-        existingItem.quantity += product.quantity;
+      const existing = state.cartItems.find((item) => item._id === product._id);
+      if (existing) {
+        existing.quantity += product.quantity;
       } else {
         state.cartItems.push({ ...product });
       }
@@ -38,26 +40,24 @@ const cartSlice = createSlice({
 
     removeFromCart: (state, action) => {
       const productId = action.payload;
-      const existingItem = state.cartItems.find((item) => item._id === productId);
+      const item = state.cartItems.find((i) => i._id === productId);
+      if (!item) return;
 
-      if (!existingItem) return;
-
-      state.totalQuantity -= existingItem.quantity;
-      state.totalPrice -= existingItem.price * existingItem.quantity;
-      state.cartItems = state.cartItems.filter((item) => item._id !== productId);
+      state.totalQuantity -= item.quantity;
+      state.totalPrice -= item.price * item.quantity;
+      state.cartItems = state.cartItems.filter((i) => i._id !== productId);
 
       saveCartToStorage(state);
     },
 
     updateQuantity: (state, action) => {
       const { _id, quantity } = action.payload;
-      const existingItem = state.cartItems.find((item) => item._id === _id);
+      const item = state.cartItems.find((i) => i._id === _id);
+      if (!item || quantity <= 0) return;
 
-      if (!existingItem || quantity <= 0) return;
-
-      state.totalQuantity += quantity - existingItem.quantity;
-      state.totalPrice += (quantity - existingItem.quantity) * existingItem.price;
-      existingItem.quantity = quantity;
+      state.totalQuantity += quantity - item.quantity;
+      state.totalPrice += (quantity - item.quantity) * item.price;
+      item.quantity = quantity;
 
       saveCartToStorage(state);
     },
@@ -71,5 +71,11 @@ const cartSlice = createSlice({
   },
 });
 
-export const { addToCart, removeFromCart, updateQuantity, clearCart } = cartSlice.actions;
+export const {
+  addToCart,
+  removeFromCart,
+  updateQuantity,
+  clearCart,
+} = cartSlice.actions;
+
 export default cartSlice.reducer;

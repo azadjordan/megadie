@@ -9,7 +9,8 @@ import productRoutes from "./routes/productRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import orderRoutes from "./routes/orderRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
-import categoryRoutes from "./routes/categoryRoutes.js"; // ✅ Updated import
+import categoryRoutes from "./routes/categoryRoutes.js";
+import quoteRoutes from "./routes/quoteRoutes.js"; 
 
 import { notFound, errorHandler } from "./middleware/errorMiddleware.js";
 
@@ -49,7 +50,8 @@ app.use("/api/products", productRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/payments", paymentRoutes);
-app.use("/api/categories", categoryRoutes); // ✅ Updated from subcategories to categories
+app.use("/api/categories", categoryRoutes);
+app.use("/api/quotes", quoteRoutes);
 
 // ✅ Error Handling
 app.use(notFound);

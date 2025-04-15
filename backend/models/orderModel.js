@@ -29,8 +29,6 @@ const orderSchema = new mongoose.Schema(
     deliveryCharge: { type: Number, required: true, default: 0.0 },
     extraFee: { type: Number, required: true, default: 0.0 },
     deliveredBy: { type: String, default: "" },
-    isPaid: { type: Boolean, required: true, default: false },
-    paidAt: { type: Date },
     isDelivered: { type: Boolean, required: true, default: false },
     deliveredAt: { type: Date },
     status: {
@@ -42,7 +40,6 @@ const orderSchema = new mongoose.Schema(
     adminToAdminNote: { type: String, default: "" },
     adminToClientNote: { type: String, default: "" },
     stockUpdated: { type: Boolean, required: true, default: false },
-    isMoneyAssigned: { type: Boolean, default: false },
   },
   { timestamps: true }
 );
