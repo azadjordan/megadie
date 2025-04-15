@@ -5,16 +5,55 @@ export const productsApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     // ✅ Get all products (with longer cache duration)
     getProducts: builder.query({
-      query: () => PRODUCTS_URL,
-      providesTags: ["Product"],
-      keepUnusedDataFor: 300, // ⏳ Cache stays for 5 minutes
+      query: ({ productType, categoryIds, attributes }) => {
+        const params = new URLSearchParams();
+
+        if (productType) params.append("productType", productType);
+        if (categoryIds?.length > 0) {
+          for (const id of categoryIds) {
+            params.append("categoryIds", id);
+          }
+        }
+
+        if (attributes) {
+          for (const key in attributes) {
+            for (const value of attributes[key]) {
+              params.append(`attributes[${key}]`, value);
+            }
+          }
+        }
+
+        const fullQuery = `${PRODUCTS_URL}?${params.toString()}`;
+        return fullQuery;
+      },
     }),
 
-    // ✅ Get product by ID (also keep cached for 5 mins)
+    getProductsAdmin: builder.query({
+      query: ({ productType, categoryIds, attributes }) => {
+        const params = new URLSearchParams();
+
+        if (productType) params.append("productType", productType);
+        if (categoryIds?.length > 0) {
+          for (const id of categoryIds) {
+            params.append("categoryIds", id);
+          }
+        }
+
+        if (attributes) {
+          for (const key in attributes) {
+            for (const value of attributes[key]) {
+              params.append(`attributes[${key}]`, value);
+            }
+          }
+        }
+
+        return `/api/products/admin?${params.toString()}`;
+      },
+    }),
+
+    // ✅ Add this
     getProductById: builder.query({
       query: (id) => `${PRODUCTS_URL}/${id}`,
-      providesTags: (result, error, id) => [{ type: "Product", id }],
-      keepUnusedDataFor: 300,
     }),
 
     // ✅ Create a new product
@@ -50,6 +89,7 @@ export const productsApiSlice = apiSlice.injectEndpoints({
 
 export const {
   useGetProductsQuery,
+  useGetProductsAdminQuery, 
   useGetProductByIdQuery,
   useCreateProductMutation,
   useUpdateProductMutation,

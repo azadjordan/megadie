@@ -22,7 +22,7 @@ const productSchema = new mongoose.Schema(
         "1-inch", // Ribbon sizes
         "0.5-inch",
         "0.4x1.5", // Creasing Matrix sizes
-        "0.5x1.6",
+        "0.5x1.5",
         "0.5x1.6",
         "6mm", // Tape widths
         "9mm",
@@ -38,10 +38,10 @@ const productSchema = new mongoose.Schema(
     },
 
     code: {
-      type: Number,
+      type: String,
       unique: true,
-      sparse: true, // allows code to be optional but still unique if present
-    },
+      sparse: true,
+    },    
 
     displaySpecs: {
       type: String,

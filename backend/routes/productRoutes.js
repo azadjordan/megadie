@@ -1,23 +1,30 @@
 import express from "express";
-import { 
-  getProducts, 
-  getProductById, 
-  createProduct, 
-  updateProduct, 
-  deleteProduct 
+import {
+  getProducts,
+  getProductsAdmin,     // ✅ Admin: list all with filters/pagination
+  getProductById,
+  createProduct,
+  updateProduct,
+  deleteProduct,
 } from "../controllers/productController.js";
-import { protect, admin } from "../middleware/authMiddleware.js"; // ✅ Ensure only admins can modify products
+import { protect, admin } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-// ✅ Public + Admin Combined
-router.route("/")
-  .get(getProducts)                         // Public
-  .post(protect, admin, createProduct);     // Admin only
+// ✅ Public route for shop (filtered by users)
+router.route("/").get(getProducts);
 
-router.route("/:id")
-  .get(getProductById)                      // Public
-  .put(protect, admin, updateProduct)       // Admin only
-  .delete(protect, admin, deleteProduct);   // Admin only
+// ✅ Admin route for backend product management
+router.route("/admin").get(protect, admin, getProductsAdmin);
+
+// ✅ Admin can create product
+router.route("/").post(protect, admin, createProduct);
+
+// ✅ Individual product routes
+router
+  .route("/:id")
+  .get(getProductById)
+  .put(protect, admin, updateProduct)
+  .delete(protect, admin, deleteProduct);
 
 export default router;

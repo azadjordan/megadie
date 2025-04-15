@@ -1,10 +1,20 @@
 import { useGetProductsQuery } from "../slices/productsApiSlice";
 import ProductCard from "../components/ProductCard";
 import ShopFilters from "../components/ShopFilters";
+import { useSelector } from "react-redux";
+
 
 const Shop = () => {
-  const { data: products, isLoading, error } = useGetProductsQuery();
-
+  const { selectedProductType, selectedCategoryIds, selectedAttributes } = useSelector(
+    (state) => state.filters
+  );
+  
+  const { data: products, isLoading, error } = useGetProductsQuery({
+    productType: selectedProductType,
+    categoryIds: selectedCategoryIds,
+    attributes: selectedAttributes,
+  });
+  
   return (
     <div className="flex flex-col md:flex-row gap-4 p-4 max-w-screen-xl mx-auto">
       {/* 🔹 Left Filter Sidebar */}

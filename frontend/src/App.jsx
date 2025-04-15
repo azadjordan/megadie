@@ -33,6 +33,7 @@ import CategoryUpdate from "./pages/CategoryUpdate";
 import QuoteList from "./pages/QuoteList";
 import InvoiceList from "./pages/InvoiceList";
 import AdminHeader from "./components/AdminHeader"; // ✅ Admin Navigation
+import ProductUpdate from "./pages/ProductUpdate.jsx";
 
 
 const App = () => {
@@ -83,6 +84,7 @@ const App = () => {
           <Route element={<AdminRoute />}>
             <Route path="/admin/orders" element={<OrderList />} />
             <Route path="/admin/products" element={<ProductList />} />
+            <Route path="/admin/products/:id/edit" element={<ProductUpdate />} />
             <Route path="/admin/categories" element={<CategoryList />} />
             <Route path="/admin/categories/:id/edit" element={<CategoryUpdate />} />
             <Route path="/admin/users" element={<UserList />} />

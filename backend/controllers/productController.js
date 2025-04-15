@@ -1,162 +1,148 @@
-import asyncHandler from "../middleware/asyncHandler.js";
 import Product from "../models/productModel.js";
-import Category from "../models/categoryModel.js";
+import asyncHandler from "../middleware/asyncHandler.js";
 
-// @desc    Get all products
+// @desc    Get filtered products for admin view
+// @route   GET /api/products/admin
+// @access  Private/Admin
+const getProductsAdmin = async (req, res) => {
+  const { productType, categoryIds } = req.query;
+  console.log("[GET /api/products/admin] Query:", req.query);
+
+  const filter = {};
+
+  if (productType) {
+    filter.productType = productType;
+  }
+
+  if (categoryIds) {
+    filter.category = Array.isArray(categoryIds)
+      ? { $in: categoryIds }
+      : { $in: [categoryIds] };
+  }
+
+  if (req.query.attributes) {
+    for (const key in req.query.attributes) {
+      const values = req.query.attributes[key];
+      filter[key] = {
+        $in: Array.isArray(values) ? values : [values],
+      };
+    }
+  }
+
+  console.log("[Admin Filter]:", filter);
+
+  const products = await Product.find(filter)
+    .populate("category", "name displayName productType") // ✅ helpful for admin UI
+    .sort({ createdAt: -1 });
+
+  res.json(products);
+};
+
+// @desc    Get filtered products (public-facing shop view)
 // @route   GET /api/products
 // @access  Public
-const getProducts = asyncHandler(async (req, res) => {
-  const products = await Product.find().populate("category", "name").sort({ createdAt: -1 });
+const getProducts = async (req, res) => {
+  const { productType, categoryIds } = req.query;
+  console.log("[GET /api/products] Query:", req.query);
+
+  const filter = {};
+
+  if (productType) filter.productType = productType;
+
+  if (categoryIds) {
+    filter.category = Array.isArray(categoryIds)
+      ? { $in: categoryIds }
+      : { $in: [categoryIds] };
+  }
+
+  if (req.query.attributes) {
+    for (const key in req.query.attributes) {
+      const values = req.query.attributes[key];
+      filter[key] = {
+        $in: Array.isArray(values) ? values : [values],
+      };
+    }
+  }
+
+  const products = await Product.find(filter).sort({ createdAt: -1 });
   res.json(products);
-});
+};
 
 // @desc    Get product by ID
 // @route   GET /api/products/:id
 // @access  Public
 const getProductById = asyncHandler(async (req, res) => {
-  const product = await Product.findById(req.params.id).populate("category", "name");
+  const product = await Product.findById(req.params.id).populate("category", "name displayName");
 
-  if (!product) {
+  if (product) {
+    res.json(product);
+  } else {
     res.status(404);
     throw new Error("Product not found");
   }
-
-  res.json(product);
 });
 
-// @desc    Create a product
+// @desc    Create new product
 // @route   POST /api/products
 // @access  Admin
 const createProduct = asyncHandler(async (req, res) => {
-  const {
-    name,
-    productType,
-    category,
-    size,
-    color,
-    code,
-    displaySpecs,
-    stock,
-    moq,
-    isAvailable,
-    origin,
-    storageLocation,
-    price,
-    unit,
-    images,
-    description,
-  } = req.body;
-
-  // Validate required fields
-  if (!name || !productType || !category || !size || !origin || price === undefined) {
-    res.status(400);
-    throw new Error("Missing required fields");
-  }
-
-  // Validate category exists
-  const categoryExists = await Category.findById(category);
-  if (!categoryExists) {
-    res.status(400);
-    throw new Error("Invalid category");
-  }
-
-  const newProduct = new Product({
-    name,
-    productType,
-    category,
-    size,
-    color,
-    code,
-    displaySpecs,
-    stock: stock ?? 0,
-    moq: moq ?? 1,
-    isAvailable: isAvailable ?? true,
-    origin,
-    storageLocation: storageLocation || "Warehouse A - Shelf 1",
-    price,
-    unit: unit || "roll",
-    images: images || [],
-    description: description || "",
+  const sample = new Product({
+    name: "Sample Product",
+    productType: "Ribbon",
+    category: req.body.category || null,
+    size: "1-inch",
+    color: "Red",
+    code: Date.now(), // just to ensure uniqueness
+    displaySpecs: "Red | 1-inch | Made in Japan",
+    origin: "Japan",
+    stock: 100,
+    moq: 1,
+    price: 10.0,
+    unit: "roll",
+    images: [],
+    description: "This is a sample product.",
   });
 
-  const createdProduct = await newProduct.save();
-  res.status(201).json(createdProduct);
+  const created = await sample.save();
+  res.status(201).json(created);
 });
 
-// @desc    Update a product
+// @desc    Update product
 // @route   PUT /api/products/:id
 // @access  Admin
 const updateProduct = asyncHandler(async (req, res) => {
-  const {
-    name,
-    productType,
-    category,
-    size,
-    color,
-    code,
-    displaySpecs,
-    stock,
-    moq,
-    isAvailable,
-    origin,
-    storageLocation,
-    price,
-    unit,
-    images,
-    description,
-  } = req.body;
-
   const product = await Product.findById(req.params.id);
+
   if (!product) {
     res.status(404);
     throw new Error("Product not found");
   }
 
-  if (category) {
-    const categoryExists = await Category.findById(category);
-    if (!categoryExists) {
-      res.status(400);
-      throw new Error("Invalid category");
-    }
-  }
+  Object.keys(req.body).forEach((key) => {
+    product[key] = req.body[key] ?? product[key];
+  });
 
-  // Update fields
-  product.name = name ?? product.name;
-  product.productType = productType ?? product.productType;
-  product.category = category ?? product.category;
-  product.size = size ?? product.size;
-  product.color = color ?? product.color;
-  product.code = code ?? product.code;
-  product.displaySpecs = displaySpecs ?? product.displaySpecs;
-  product.stock = stock ?? product.stock;
-  product.moq = moq ?? product.moq;
-  product.isAvailable = isAvailable ?? product.isAvailable;
-  product.origin = origin ?? product.origin;
-  product.storageLocation = storageLocation ?? product.storageLocation;
-  product.price = price ?? product.price;
-  product.unit = unit ?? product.unit;
-  product.images = images ?? product.images;
-  product.description = description ?? product.description;
-
-  const updatedProduct = await product.save();
-  res.json(updatedProduct);
+  const updated = await product.save();
+  res.json(updated);
 });
 
-// @desc    Delete a product
+// @desc    Delete product
 // @route   DELETE /api/products/:id
 // @access  Admin
 const deleteProduct = asyncHandler(async (req, res) => {
   const product = await Product.findById(req.params.id);
+
   if (!product) {
     res.status(404);
     throw new Error("Product not found");
   }
 
   await product.deleteOne();
-  res.json({ message: "Product deleted successfully" });
+  res.json({ message: "Product removed" });
 });
 
 export {
+  getProductsAdmin,
   getProducts,
   getProductById,
   createProduct,
