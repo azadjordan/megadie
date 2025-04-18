@@ -8,20 +8,13 @@ import Cart from "./pages/Cart";
 import Login from "./pages/Login";
 import Product from "./pages/Product";
 import Register from "./pages/Register";
-import Profile from "./pages/Profile";
-import PlaceOrder from "./pages/PlaceOrder";
 import PrivateRoute from "./components/PrivateRoute";
 import OrderConfirmation from "./pages/OrderConfirmation";
-import OrderDetails from "./pages/OrderDetails";
-import AccountDashboard from "./pages/AccountDashboard";
-import MyOrders from "./pages/MyOrders";
+import AccountDashboard from "./pages/account/AccountDashboard";
 import AdminRoute from "./components/AdminRoute";
 import OrderList from "./pages/OrderList";
 import ProductList from "./pages/ProductList";
 import UserList from "./pages/UserList";
-import EditOrderPrices from "./pages/EditOrderPrices"; // ✅ Import EditOrderPrices
-import OrderDetailsUser from "./pages/OrderDetailsUser";
-import MyPayments from "./pages/MyPayments";
 import PaymentList from "./pages/PaymentList";
 import CreatePayment from "./pages/CreatePayment";
 import ScrollToTopButton from "./components/ScrollToTopButton";
@@ -36,6 +29,13 @@ import ProductUpdate from "./pages/ProductUpdate.jsx";
 import UserUpdate from "./pages/UserUpdate.jsx";
 import QuoteSuccess from "./pages/QuoteSuccess.jsx";
 import QuoteUpdate from "./pages/QuoteUpdate.jsx";
+import UserProfile from "./pages/account/UserProfile.jsx";
+import UserRequests from "./pages/account/UserRequests.jsx";
+import UserOrders from "./pages/account/UserOrders.jsx";
+import UserInvoices from "./pages/account/UserInvoices.jsx";
+import UserPayments from "./pages/account/UserPayments.jsx";
+import UserOrder from "./pages/account/UserOrder.jsx";
+import OrderDetails from "./pages/OrderDetails.jsx";
 
 const App = () => {
   return (
@@ -68,24 +68,20 @@ const App = () => {
 
           <Route element={<PrivateRoute />}>
             <Route path="/account" element={<AccountDashboard />}>
-              <Route path="profile" element={<Profile />} />
-              <Route path="orders" element={<MyOrders />} />
-              <Route path="orders/:id" element={<OrderDetailsUser />} />{" "}
-              <Route path="/account/payments" element={<MyPayments />} />
+              <Route path="profile" element={<UserProfile />} />
+              <Route path="requests" element={<UserRequests />} />
+              <Route path="orders" element={<UserOrders />} />
+              <Route path="orders/:id" element={<UserOrder />} />
+              <Route path="invoices" element={<UserInvoices />} />
+              <Route path="payments" element={<UserPayments />} />
             </Route>
-            <Route path="/place-order" element={<PlaceOrder />} />
-            <Route path="/order/:id" element={<OrderDetails />} />
-            <Route
-              path="/order-confirmation/:orderId"
-              element={<OrderConfirmation />}
-            />
-
             <Route path="quotes/quote-success" element={<QuoteSuccess />} />
           </Route>
 
           {/* ✅ Admin Routes */}
           <Route element={<AdminRoute />}>
             <Route path="/admin/orders" element={<OrderList />} />
+            <Route path="/admin/orders/:id" element={<OrderDetails />} />
             <Route path="/admin/products" element={<ProductList />} />
             <Route
               path="/admin/products/:id/edit"
@@ -102,10 +98,6 @@ const App = () => {
             <Route path="/admin/quotes" element={<QuoteList />} />
             <Route path="/admin/quotes/:id/edit" element={<QuoteUpdate />} />
             <Route path="/admin/invoices" element={<InvoiceList />} />
-            <Route
-              path="/admin/order/edit-prices/:orderId"
-              element={<EditOrderPrices />}
-            />
             <Route path="/admin/payments" element={<PaymentList />} />
             <Route path="/admin/payments/create" element={<CreatePayment />} />
             <Route

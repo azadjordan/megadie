@@ -12,7 +12,6 @@ const quoteSchema = new mongoose.Schema(
         },
         qty: { type: Number, required: true },
         unitPrice: { type: Number, required: true },
-        qtyPrice: { type: Number, default: 0 },
       },
     ],
     deliveryCharge: { type: Number, required: true, default: 0.0 },
@@ -29,8 +28,8 @@ const quoteSchema = new mongoose.Schema(
     clientToAdminNote: { type: String, default: "" },
     AdminToClientNote: { type: String, default: "" },
 
-    isConvertedToOrder: { type: Boolean, default: false },
-    convertedOrderId: { type: mongoose.Schema.Types.ObjectId, ref: "Order" },
+    isOrderCreated: { type: Boolean, default: false },
+    createdOrderId: { type: mongoose.Schema.Types.ObjectId, ref: "Order" },
   },
   { timestamps: true }
 );

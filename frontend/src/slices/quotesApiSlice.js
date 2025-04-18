@@ -45,11 +45,19 @@ export const quotesApiSlice = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ["Quote"],
     }),
+
+    getMyQuotes: builder.query({
+      query: () => `${QUOTES_URL}/my`,
+      providesTags: ["Quote"],
+      keepUnusedDataFor: 300,
+    }),
+    
   }),
 });
 
 export const {
   useGetQuotesQuery,
+  useGetMyQuotesQuery,
   useGetQuoteByIdQuery,
   useCreateQuoteMutation,
   useUpdateQuoteMutation,

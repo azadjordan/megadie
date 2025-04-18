@@ -1,6 +1,37 @@
 import asyncHandler from "../middleware/asyncHandler.js";
 import Quote from "../models/quoteModel.js";
 
+// @desc    Get logged-in user's own quotes
+// @route   GET /api/quotes/my
+// @access  Private
+export const getMyQuotes = asyncHandler(async (req, res) => {
+  const quotes = await Quote.find({ user: req.user._id })
+    .populate("requestedItems.product", "name code size")
+    .sort({ createdAt: -1 });
+
+  const sanitizedQuotes = quotes.map((quote) => {
+    const quoteObj = quote.toObject();
+
+    if (quote.status === "Requested") {
+      // Remove pricing info
+      quoteObj.requestedItems = quoteObj.requestedItems.map((item) => ({
+        product: item.product,
+        qty: item.qty,
+      }));
+
+      quoteObj.deliveryCharge = undefined;
+      quoteObj.extraFee = undefined;
+      quoteObj.totalPrice = undefined;
+    }
+
+    return quoteObj;
+  });
+
+  res.json(sanitizedQuotes);
+});
+
+
+
 // @desc    Create a new quote (Client)
 // @route   POST /api/quotes
 // @access  Private
@@ -22,16 +53,18 @@ export const createQuote = asyncHandler(async (req, res) => {
   res.status(201).json(quote);
 });
 
-// @desc    Get all quotes (Admin only)
+// @desc    Get all quotes (Admin only) sorted from latest to oldest
 // @route   GET /api/quotes/admin
 // @access  Private/Admin
 export const getQuotes = asyncHandler(async (req, res) => {
   const quotes = await Quote.find({})
     .populate("user", "name email")
-    .populate("requestedItems.product", "name code size");
+    .populate("requestedItems.product", "name code size")
+    .sort({ createdAt: -1 }); // 👈 Sort by creation date, newest first
 
   res.json(quotes);
 });
+
 
 // @desc    Get single quote by ID
 // @route   GET /api/quotes/:id
@@ -66,10 +99,16 @@ export const updateQuote = asyncHandler(async (req, res) => {
     throw new Error("Quote not found.");
   }
 
+  // ✅ Apply updates from request body
   Object.assign(quote, req.body);
+
+  // ✅ Ensure status is set to "Quoted"
+  quote.status = "Quoted";
+
   const updated = await quote.save();
   res.json(updated);
 });
+
 
 // @desc    Delete quote (Admin)
 // @route   DELETE /api/quotes/:id

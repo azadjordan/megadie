@@ -1,145 +1,72 @@
-import { apiSlice } from "./apiSlice";
 import { ORDERS_URL } from "../constants";
+import apiSlice from "./apiSlice";
 
 export const ordersApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    toggleDebtAssignment: builder.mutation({
-      query: (orderId) => ({
-        url: `${ORDERS_URL}/${orderId}/toggle-debt`,
-        method: "PUT",
-      }),
-      invalidatesTags: ["Order"],
-    }),
-
-    updateOrderPrices: builder.mutation({
-      query: ({ orderId, updatedItems, deliveryCharge, extraFee }) => ({
-        url: `${ORDERS_URL}/${orderId}/update-prices`,
-        method: "PUT",
-        body: { updatedItems, deliveryCharge, extraFee }, // ✅ Include extraFee
-        credentials: "include",
-      }),
-      invalidatesTags: ["Order"],
-    }),
-
-    updateSellerNote: builder.mutation({
-      query: ({ orderId, sellerNote }) => ({
-        url: `${ORDERS_URL}/${orderId}/seller-note`,
-        method: "PUT",
-        body: { sellerNote },
-        credentials: "include",
-      }),
-      invalidatesTags: ["Order"],
-    }),
-    // ✅ Update Admin Note
-    updateAdminNote: builder.mutation({
-      query: ({ orderId, adminNote }) => ({
-        url: `${ORDERS_URL}/${orderId}/admin-note`,
-        method: "PUT",
-        body: { adminNote }, // ✅ Ensure adminNote is correctly sent
-        credentials: "include",
-      }),
-      invalidatesTags: ["Order"],
-    }),
-
-    // ✅ Update Order Status (Admin)
-    updateOrderStatus: builder.mutation({
-      query: ({ orderId, status }) => ({
-        url: `${ORDERS_URL}/${orderId}/status`,
-        method: "PUT",
-        body: { status },
-        credentials: "include",
-      }),
-      invalidatesTags: ["Order"],
-    }),
-
-    // ✅ Toggle Order Payment Status (Admin)
-    toggleOrderPaymentStatus: builder.mutation({
-      query: (orderId) => ({
-        url: `${ORDERS_URL}/${orderId}/toggle-pay`,
-        method: "PUT",
-        credentials: "include",
-      }),
-      invalidatesTags: ["Order"],
-    }),
-
-    // ✅ Create a New Order (Ensure it uses `clientNote`)
-    createOrder: builder.mutation({
-      query: ({ orderItems, totalPrice, clientNote }) => ({
-        url: `${ORDERS_URL}/`,
+    createOrderFromQuote: builder.mutation({
+      query: (quoteId) => ({
+        url: `/api/orders/from-quote/${quoteId}`,
         method: "POST",
-        body: { orderItems, totalPrice, clientNote }, // ✅ Correct field name
-        credentials: "include",
       }),
-      invalidatesTags: ["Orders"],
+      invalidatesTags: ["Order", "Quote"],
     }),
-
-    // ✅ Get a Single Order by ID (Includes `clientNote` & `adminNote`)
-    getOrderById: builder.query({
-      query: (orderId) => ({
-        url: `${ORDERS_URL}/${orderId}`,
-        method: "GET",
-        credentials: "include",
-      }),
+    
+    
+    // ✅ Get all orders (Admin)
+    getOrders: builder.query({
+      query: () => ORDERS_URL,
       providesTags: ["Order"],
-      keepUnusedDataFor: 300, // ✅ Keeps order details cached for 5 minutes
     }),
 
-    // ✅ Get Logged-in User's Orders
+    // ✅ Get single order by ID
+    getOrderById: builder.query({
+      query: (id) => `${ORDERS_URL}/${id}`,
+      providesTags: (result, error, id) => [{ type: "Order", id }],
+    }),
+
+    // ✅ Create a new order
+    createOrder: builder.mutation({
+      query: (data) => ({
+        url: ORDERS_URL,
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["Order"],
+    }),
+
+    // ✅ Update an existing order (Admin)
+    updateOrder: builder.mutation({
+      query: ({ id, ...data }) => ({
+        url: `${ORDERS_URL}/${id}`,
+        method: "PUT",
+        body: data,
+      }),
+      invalidatesTags: (result, error, { id }) => [{ type: "Order", id }],
+    }),
+
+    // ✅ Delete order (Admin)
+    deleteOrder: builder.mutation({
+      query: (id) => ({
+        url: `${ORDERS_URL}/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Order"],
+    }),
+
+    // ✅ Get my orders (client)
     getMyOrders: builder.query({
-      query: () => ({
-        url: `${ORDERS_URL}/myorders`,
-        method: "GET",
-        credentials: "include",
-      }),
-      providesTags: ["Orders"],
-      keepUnusedDataFor: 600, // ✅ Keeps MyOrders cached for 10 minutes
-    }),
-
-    // ✅ Get All Orders (Admin Only)
-    getAllOrders: builder.query({
-      query: () => ({
-        url: `${ORDERS_URL}/`,
-        method: "GET",
-        credentials: "include",
-      }),
-      providesTags: ["Orders"],
-      keepUnusedDataFor: 120, // ✅ Keeps admin OrderList cached for 2 minutes
-    }),
-
-    // ✅ Deduct Stock (Admin)
-    deductStock: builder.mutation({
-      query: (orderId) => ({
-        url: `${ORDERS_URL}/${orderId}/deduct-stock`,
-        method: "POST",
-        credentials: "include",
-      }),
-      invalidatesTags: ["Order"],
-    }),
-
-    // ✅ Restore Stock (Admin)
-    restoreStock: builder.mutation({
-      query: (orderId) => ({
-        url: `${ORDERS_URL}/${orderId}/restore-stock`,
-        method: "POST",
-        credentials: "include",
-      }),
-      invalidatesTags: ["Order"],
+      query: () => `${ORDERS_URL}/my`,
+      providesTags: ["Order"],
     }),
   }),
 });
 
-// ✅ Export Hooks
 export const {
-  useCreateOrderMutation,
+  useCreateOrderFromQuoteMutation,
+  useGetOrdersQuery,
   useGetOrderByIdQuery,
+  useCreateOrderMutation,
+  useUpdateOrderMutation,
+  useDeleteOrderMutation,
   useGetMyOrdersQuery,
-  useGetAllOrdersQuery,
-  useToggleOrderPaymentStatusMutation,
-  useUpdateOrderStatusMutation,
-  useDeductStockMutation,
-  useRestoreStockMutation,
-  useUpdateAdminNoteMutation,
-  useUpdateSellerNoteMutation,
-  useUpdateOrderPricesMutation,
-  useToggleDebtAssignmentMutation,
 } = ordersApiSlice;

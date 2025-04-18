@@ -5,18 +5,22 @@ import {
   getQuoteById,
   updateQuote,
   deleteQuote,
+  getMyQuotes,
 } from "../controllers/quoteController.js";
 import { protect, admin } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-// ✅ Public route (user requests a quote)
+// ✅ Create a new quote (client)
 router.route("/").post(protect, createQuote);
 
-// ✅ Admin route to get all quotes
+// ✅ Get current user's own quotes (client)
+router.get("/my", protect, getMyQuotes); // 👈 this MUST come before "/:id"
+
+// ✅ Get all quotes (admin only)
 router.route("/admin").get(protect, admin, getQuotes);
 
-// ✅ Quote details, update, delete
+// ✅ Get / update / delete a specific quote
 router
   .route("/:id")
   .get(protect, getQuoteById)

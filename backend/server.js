@@ -11,6 +11,7 @@ import orderRoutes from "./routes/orderRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
 import categoryRoutes from "./routes/categoryRoutes.js";
 import quoteRoutes from "./routes/quoteRoutes.js"; 
+import invoiceRoutes from "./routes/invoiceRoutes.js"; // <-- ✅ Import the new route
 
 import { notFound, errorHandler } from "./middleware/errorMiddleware.js";
 
@@ -52,6 +53,7 @@ app.use("/api/orders", orderRoutes);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/quotes", quoteRoutes);
+app.use("/api/invoices", invoiceRoutes); // <-- ✅ Add this line
 
 // ✅ Error Handling
 app.use(notFound);

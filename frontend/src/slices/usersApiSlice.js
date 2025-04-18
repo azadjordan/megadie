@@ -21,7 +21,7 @@ export const usersApiSlice = apiSlice.injectEndpoints({
     }),
     getUserProfile: builder.query({
       query: () => ({
-        url: `${USERS_URL}/profile`,
+        url: `${USERS_URL}/account/profile`,
         method: "GET",
         credentials: "include",
       }),

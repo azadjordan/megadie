@@ -17,7 +17,6 @@ const orderSchema = new mongoose.Schema(
         product: { type: mongoose.Schema.Types.ObjectId, required: true, ref: "Product" },
         qty: { type: Number, required: true },
         unitPrice: { type: Number, required: true },
-        qtyPrice: { type: Number, required: true },
       },
     ],
     shippingAddress: {
@@ -33,13 +32,14 @@ const orderSchema = new mongoose.Schema(
     deliveredAt: { type: Date },
     status: {
       type: String,
-      enum: ["Pending", "Processing", "Delivered", "Cancelled"],
-      default: "Pending",
+      enum: [ "Processing", "Delivered","Returned", "Cancelled"],
+      default: "Processing",
     },
     clientToAdminNote: { type: String, default: "" },
     adminToAdminNote: { type: String, default: "" },
     adminToClientNote: { type: String, default: "" },
     stockUpdated: { type: Boolean, required: true, default: false },
+    invoiceGenerated: { type: Boolean, required: true, default: false },
   },
   { timestamps: true }
 );

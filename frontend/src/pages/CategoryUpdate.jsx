@@ -4,7 +4,7 @@ import {
   useUpdateCategoryMutation,
 } from "../slices/categoriesApiSlice";
 import { useState, useEffect } from "react";
-import CategoryFilters from "../components/CategoryFilters";
+import CategoryFiltersUpdate from "../components/CategoryFiltersUpdate";
 
 const CategoryUpdate = () => {
   const { id } = useParams();
@@ -158,7 +158,7 @@ const CategoryUpdate = () => {
       </div>
 
       {/* ✅ Editable Filters Section */}
-      <CategoryFilters
+      <CategoryFiltersUpdate
         filters={formData.filters}
         setFilters={(updatedFilters) =>
           setFormData((prev) => ({ ...prev, filters: updatedFilters }))

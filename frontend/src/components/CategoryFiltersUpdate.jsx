@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 
-const CategoryFilters = ({ filters, setFilters }) => {
+const CategoryFiltersUpdate = ({ filters, setFilters }) => {
   const [valuesInputs, setValuesInputs] = useState([]);
 
   useEffect(() => {
@@ -119,4 +119,4 @@ const CategoryFilters = ({ filters, setFilters }) => {
   );
 };
 
-export default CategoryFilters;
+export default CategoryFiltersUpdate;

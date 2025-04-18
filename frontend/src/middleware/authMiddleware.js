@@ -10,7 +10,7 @@ const authMiddleware = (store) => (next) => async (action) => {
   if (userInfo && !sessionChecked) {
     sessionChecked = true; // ✅ Mark session as checked to prevent infinite calls
     try {
-      const res = await fetch(`${API_BASE_URL}/api/users/profile`, {
+      const res = await fetch(`${API_BASE_URL}/api/users/account/profile`, {
         method: "GET",
         credentials: "include", // ✅ Ensure JWT cookie is sent
       });

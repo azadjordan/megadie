@@ -24,7 +24,7 @@ const AdminHeader = () => {
               }`
             }
           >
-            Quotes
+            Quotes/Requests
           </NavLink>
           <NavLink
             to="/admin/orders"

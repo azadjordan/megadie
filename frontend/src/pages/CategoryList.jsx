@@ -22,7 +22,7 @@ const CategoryList = () => {
   };
 
   return (
-    <div className="p-6 max-w-screen-xl mx-auto">
+    <div className="p-6 w-full ">
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-gray-800">Product Categories</h2>
@@ -47,7 +47,7 @@ const CategoryList = () => {
       ) : categories?.length === 0 ? (
         <p className="text-gray-600 italic">No categories found.</p>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+        <div className="grid xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {categories.map((category) => (
             <Link
               key={category._id}

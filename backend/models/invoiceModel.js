@@ -21,6 +21,10 @@ const invoiceSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
+    originalOrderTotal: {
+      type: Number,
+      required: true,
+    },
     amountPaid: {
       type: Number,
       default: 0,
@@ -59,6 +63,5 @@ invoiceSchema.pre("validate", async function (next) {
   next();
 });
 
-// ✅ Final export
 const Invoice = mongoose.model("Invoice", invoiceSchema);
 export default Invoice;

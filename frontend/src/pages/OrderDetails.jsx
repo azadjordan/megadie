@@ -1,273 +1,123 @@
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { useGetOrderByIdQuery } from "../slices/ordersApiSlice";
-import { useGetUserByIdQuery } from "../slices/usersApiSlice"; // ✅ Fetch latest user info
-import { FaCheckCircle, FaTimesCircle } from "react-icons/fa";
-import OrderActions from "../components/OrderActions"; // ✅ Import OrderActions
-
-const statusColors = {
-  Pending: "bg-yellow-500 text-white",
-  Quoted: "bg-purple-500 text-white",
-  Processing: "bg-blue-500 text-white",
-  Shipped: "bg-indigo-500 text-white",
-  Delivered: "bg-green-500 text-white",
-  Cancelled: "bg-red-500 text-white",
-};
+import { FaArrowLeft } from "react-icons/fa";
 
 const OrderDetails = () => {
-  const navigate = useNavigate();
-  const { id: orderId } = useParams();
+  const { id } = useParams();
   const {
     data: order,
     isLoading,
-    isError,
-    refetch,
-  } = useGetOrderByIdQuery(orderId);
-
-  // ✅ Fetch the latest user data separately
-  const {
-    data: user,
-    isLoading: isUserLoading,
-    isError: isUserError,
-    refetch: refetchUser, // ✅ Extract refetchUser correctly
-  } = useGetUserByIdQuery(order?.user._id, {
-    skip: !order?.user._id, // Avoid calling if order isn't loaded yet
-  });
-  
-
-  if (isLoading)
-    return (
-      <p className="text-gray-500 text-center py-10">
-        Loading order details...
-      </p>
-    );
-  if (isError)
-    return (
-      <p className="text-red-500 text-center py-10">
-        Failed to load order details.
-      </p>
-    );
-  if (!order)
-    return <p className="text-gray-500 text-center py-10">Order not found.</p>;
+    error,
+  } = useGetOrderByIdQuery(id);
 
   return (
-    <div className="container mx-auto px-6 mt-16 w-[85%]">
-      {/* ✅ Back Button */}
-      <button
-        onClick={() => navigate(-1)}
-        className="mb-4 px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400 transition"
-      >
-        ← Back
-      </button>
-
-      {/* ✅ Order Information & Ordered Items */}
-      <div className="bg-white shadow-md rounded-lg p-6">
-        {/* ✅ Order Header (Title + Status + Payment) */}
-        <div className="flex justify-between items-center mb-6 bg-purple-50 p-6 rounded-lg">
-          <h2 className="text-3xl font-bold text-gray-900">
-            Order: <span>{order._id}</span>
-          </h2>
-          <div className="flex items-center gap-3">
-            <span
-              className={`px-4 py-2 text-sm font-semibold rounded-full ${
-                statusColors[order.status]
-              }`}
-            >
-              {order.status}
-            </span>
-            <span className="flex items-center px-3 py-2 bg-gray-200 text-gray-700 rounded-full">
-              {order.isPaid ? (
-                <>
-                  <FaCheckCircle className="text-green-500 mr-2" size={18} />
-                  Paid
-                </>
-              ) : (
-                <>
-                  <FaTimesCircle className="text-red-500 mr-2" size={18} />
-                  Not Paid
-                </>
-              )}
-            </span>
-          </div>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* ✅ Order Information */}
-          <div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-3">
-              Order Information
-            </h3>
-            <div className="space-y-2 text-gray-800">
-              <div className="flex justify-between border-b pb-2">
-                <span className="font-medium text-gray-700">Date:</span>
-                <span>{new Date(order.createdAt).toLocaleDateString()}</span>
-              </div>
-              <div className="flex justify-between border-b pb-2">
-                <span className="font-medium text-gray-700">Client Name:</span>
-                <span>{order.user.name}</span>
-              </div>
-              <div className="flex justify-between border-b pb-2">
-                <span className="font-medium text-gray-700">Email:</span>
-                <span>{order.user.email}</span>
-              </div>
-              <div className="flex justify-between border-b pb-2">
-                <span className="font-medium text-gray-700">Phone:</span>
-                <span>
-                  {order.user.phoneNumber || (
-                    <span className="text-gray-500">
-                      No phone number provided
-                    </span>
-                  )}
-                </span>
-              </div>
-              <div className="flex justify-between border-b pb-2">
-                <span className="font-medium text-gray-700">
-                  Shipping Address:
-                </span>
-                <span>{order.shippingAddress}</span>
-              </div>
-              <div className="flex justify-between border-b pb-2">
-                <span className="font-medium text-gray-700">Buyer Note:</span>
-                <span>
-                  {order.clientNote || (
-                    <span className="text-gray-500">No note provided</span>
-                  )}
-                </span>
-              </div>
-              <div className="flex justify-between border-b pb-2">
-                <span className="font-medium text-gray-700">
-                  Delivery Charge:
-                </span>
-                <span className="font-semibold text-gray-700">
-                  $
-                  {order.deliveryCharge
-                    ? order.deliveryCharge.toFixed(2)
-                    : "0.00"}
-                </span>
-              </div>
-              <div className="flex justify-between border-b pb-2">
-                <span className="font-medium text-gray-700">Extra Fee:</span>
-                <span className="font-semibold text-gray-700">
-                  ${order.extraFee ? order.extraFee.toFixed(2) : "0.00"}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="font-medium text-gray-700">Total:</span>
-                <span className="font-bold text-purple-600">
-                  ${order.totalPrice ? order.totalPrice.toFixed(2) : "0.00"}
-                </span>
-              </div>
-            </div>
-
-            {/* ✅ Seller Note */}
-            <div className="bg-yellow-50 p-4 rounded-lg mt-4">
-              <h3 className="text-md font-semibold mb-2 text-gray-900">
-                Seller Note:
-              </h3>
-              <p>
-                {order.sellerNote || (
-                  <span className="text-gray-500">
-                    No seller note available
-                  </span>
-                )}
-              </p>
-            </div>
-
-            {/* ✅ Admin Information */}
-            <div className="bg-gray-50 p-4 rounded-lg mt-4">
-              <h3 className="text-md font-semibold mb-2 text-gray-900">
-                Admin Information
-              </h3>
-
-              {isUserLoading ? (
-                <p className="text-gray-500">Loading client info...</p>
-              ) : isUserError ? (
-                <p className="text-red-500">Failed to load client info.</p>
-              ) : (
-                <>
-                  <p>
-                    <strong>Client Wallet:</strong>{" "}
-                    <span className="text-green-600 font-semibold">
-                      ${user?.wallet ? user.wallet.toFixed(2) : "0.00"}
-                    </span>
-                  </p>
-                  <p>
-                    <strong>Client Debt:</strong>{" "}
-                    <span className="text-red-500 font-semibold">
-                      $
-                      {user?.outstandingBalance
-                        ? user.outstandingBalance.toFixed(2)
-                        : "0.00"}
-                    </span>
-                  </p>
-                </>
-              )}
-
-              {/* ✅ Keep Admin Note (from Order Model) */}
-              <p className="pt-3">
-                <strong>Admin Note:</strong>{" "}
-                {order.adminNote ? (
-                  order.adminNote
-                ) : (
-                  <span className="text-gray-500">No admin note</span>
-                )}
-              </p>
-
-              {/* ✅ Keep Delivered By (from Order Model) */}
-              <p>
-                <strong>Delivered By:</strong>{" "}
-                {order.deliveredBy ? (
-                  order.deliveredBy
-                ) : (
-                  <span className="text-gray-500">Not Assigned</span>
-                )}
-              </p>
-            </div>
-          </div>
-
-          {/* ✅ Order Items */}
-          <div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-3">
-              Order Items
-            </h3>
-            {order.orderItems.map((item) => (
-              <div
-                key={item.product}
-                className="flex items-center justify-between border-b py-4 last:border-none"
-              >
-<img 
-  src={item.product.images[0]} 
-  alt={item.product.name} 
-  className="w-16 h-16 rounded-md object-cover" 
-/>
-
-                <div className="flex-grow px-4">
-                <h2 className="text-md font-medium truncate">{item.product.name}</h2>
-                <p className="text-gray-600 text-sm">
-                    ${item.price.toFixed(2)} × {item.qty}
-                  </p>
-                </div>
-                <p className="text-gray-900 font-semibold">
-                  ${(item.price * item.qty).toFixed(2)}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
+    <div className="p-6 w-full">
+      <div className="flex items-center space-x-3 mb-4">
+        <Link
+          to="/admin/orders"
+          className="text-purple-600 hover:text-purple-800 text-sm flex items-center"
+        >
+          <FaArrowLeft className="mr-1" /> Back to Order List
+        </Link>
       </div>
 
-      {/* ✅ Admin Actions */}
-      <div className="mt-6">
-        <OrderActions
-          orderId={orderId}
-          stockUpdated={order.stockUpdated}
-          currentStatus={order.status}
-          isPaid={order.isPaid}
-          isDebtAssigned={order.isDebtAssigned} // ✅ Pass Debt Assignment Status
-          adminNote={order.adminNote}
-          sellerNote={order.sellerNote}
-          refetch={refetch} // ✅ Order Refetch
-          refetchUser={refetchUser} // ✅ NEW: Refetch user data to update wallet & debt
-        />
-      </div>
+      {isLoading ? (
+        <p className="text-gray-500">Loading order details...</p>
+      ) : error ? (
+        <p className="text-red-500">Failed to load order details.</p>
+      ) : (
+        <div className="border rounded p-4 space-y-6 bg-white shadow">
+          <div className="space-y-2">
+            <h2 className="text-xl font-semibold text-purple-700">
+              Order #{order.orderNumber}
+            </h2>
+            <p className="text-sm text-gray-600">
+              Placed on {new Date(order.createdAt).toLocaleDateString()}
+            </p>
+            <p className="text-sm text-gray-600">
+              Client: {order.user?.name || "N/A"} ({order.user?.email})
+            </p>
+            <p className="text-sm">
+              Status:{" "}
+              <span className="font-medium">{order.status}</span> | Delivered:{" "}
+              {order.isDelivered ? (
+                <span className="text-green-600">Yes</span>
+              ) : (
+                <span className="text-gray-500">No</span>
+              )}
+            </p>
+            {order.deliveredBy && (
+              <p className="text-sm">Delivered By: {order.deliveredBy}</p>
+            )}
+          </div>
+
+          <div>
+            <h3 className="text-lg font-semibold mb-2">Shipping Info</h3>
+            <p className="text-gray-700">{order.shippingAddress}</p>
+          </div>
+
+          <div>
+            <h3 className="text-lg font-semibold mb-2">Order Items</h3>
+            <div className="overflow-x-auto">
+              <table className="min-w-full text-sm text-left">
+                <thead className="bg-gray-100">
+                  <tr>
+                    <th className="px-4 py-2">Product</th>
+                    <th className="px-4 py-2">Quantity</th>
+                    <th className="px-4 py-2">Unit Price (AED)</th>
+                    <th className="px-4 py-2">Subtotal (AED)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {order.orderItems.map((item, idx) => (
+                    <tr key={idx} className="border-t">
+                      <td className="px-4 py-2">
+                        {item.product?.name || item.product}
+                      </td>
+                      <td className="px-4 py-2">{item.qty}</td>
+                      <td className="px-4 py-2">{item.unitPrice.toFixed(2)}</td>
+                      <td className="px-4 py-2">
+                        {(item.qty * item.unitPrice).toFixed(2)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div className="space-y-1">
+            <h3 className="text-lg font-semibold mb-2">Pricing Summary</h3>
+            <p>Total Price: {order.totalPrice.toFixed(2)} AED</p>
+            <p>Delivery Charge: {order.deliveryCharge.toFixed(2)} AED</p>
+            <p>Extra Fee: {order.extraFee.toFixed(2)} AED</p>
+            <p className="font-medium">
+              Invoice Generated:{" "}
+              {order.invoiceGenerated ? (
+                <span className="text-green-700">Yes</span>
+              ) : (
+                <span className="text-gray-500">No</span>
+              )}
+            </p>
+          </div>
+
+          <div>
+            <h3 className="text-lg font-semibold mb-2">Notes</h3>
+            <p>
+              <strong>Client → Admin:</strong>{" "}
+              {order.clientToAdminNote || <span className="text-gray-500">-</span>}
+            </p>
+            <p>
+              <strong>Admin → Client:</strong>{" "}
+              {order.adminToClientNote || <span className="text-gray-500">-</span>}
+            </p>
+            <p>
+              <strong>Admin Internal:</strong>{" "}
+              {order.adminToAdminNote || <span className="text-gray-500">-</span>}
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

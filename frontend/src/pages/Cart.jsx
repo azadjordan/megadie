@@ -7,11 +7,13 @@ import {
 import { useCreateQuoteMutation } from "../slices/quotesApiSlice";
 import { FaTrash, FaMinus, FaPlus } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 
 const Cart = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const cart = useSelector((state) => state.cart);
+  const [note, setNote] = useState("");
   const [createQuote, { isLoading }] = useCreateQuoteMutation();
 
   const handleQuantityChange = (_id, value) => {
@@ -23,19 +25,27 @@ const Cart = () => {
 
   const handleSubmitQuote = async () => {
     try {
+      const requestedItems = cart.cartItems.map((item) => ({
+        product: item._id,
+        qty: item.quantity,
+        unitPrice: item.price, // Hidden from UI, used internally
+      }));
+
+      const totalPrice = requestedItems.reduce(
+        (acc, item) => acc + item.unitPrice * item.qty,
+        0
+      );
+
       await createQuote({
-        requestedItems: cart.cartItems.map((item) => ({
-          product: item._id,
-          qty: item.quantity,
-          unitPrice: item.price,
-          totalPrice: item.price * item.quantity,
-        })),
+        requestedItems,
+        clientToAdminNote: note,
+        totalPrice,
       }).unwrap();
 
       dispatch(clearCart());
       navigate("/quotes/quote-success");
     } catch (error) {
-      console.error("Failed to request quote:", error);
+      console.error("❌ Failed to request quote:", error);
     }
   };
 
@@ -60,7 +70,11 @@ const Cart = () => {
                 <tr key={item._id} className="border-t">
                   <td className="p-3">{item.name}</td>
                   <td className="p-3 flex items-center gap-2">
-                    <button onClick={() => dispatch(updateQuantity({ _id: item._id, quantity: item.quantity - 1 }))}>
+                    <button
+                      onClick={() =>
+                        dispatch(updateQuantity({ _id: item._id, quantity: item.quantity - 1 }))
+                      }
+                    >
                       <FaMinus className="text-gray-600 hover:text-purple-600" />
                     </button>
                     <input
@@ -70,7 +84,11 @@ const Cart = () => {
                       className="w-16 text-center border rounded px-2 py-1"
                       min="1"
                     />
-                    <button onClick={() => dispatch(updateQuantity({ _id: item._id, quantity: item.quantity + 1 }))}>
+                    <button
+                      onClick={() =>
+                        dispatch(updateQuantity({ _id: item._id, quantity: item.quantity + 1 }))
+                      }
+                    >
                       <FaPlus className="text-gray-600 hover:text-purple-600" />
                     </button>
                   </td>
@@ -86,6 +104,14 @@ const Cart = () => {
               ))}
             </tbody>
           </table>
+
+          {/* ✍️ Client Note */}
+          <textarea
+            className="w-full border rounded p-3 mb-6 text-sm"
+            placeholder="Add a note for the admin (optional)"
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+          />
 
           <div className="flex justify-between items-center">
             <button

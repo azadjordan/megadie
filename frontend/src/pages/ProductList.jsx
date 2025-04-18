@@ -78,8 +78,8 @@ const ProductList = () => {
   };
 
   return (
-    <div className="flex flex-col md:flex-row gap-4 p-6 max-w-screen-xl mx-auto">
-      {/* 🔹 Sidebar Filters */}
+<div className="flex flex-col md:flex-row gap-4 p-6 w-full">
+{/* 🔹 Sidebar Filters */}
       <aside className="w-full md:w-1/5">
         <AdminProductFilters />
       </aside>
