@@ -99,15 +99,13 @@ export const updateQuote = asyncHandler(async (req, res) => {
     throw new Error("Quote not found.");
   }
 
-  // ✅ Apply updates from request body
+  // Apply updates from request body (including status if admin changes it)
   Object.assign(quote, req.body);
-
-  // ✅ Ensure status is set to "Quoted"
-  quote.status = "Quoted";
 
   const updated = await quote.save();
   res.json(updated);
 });
+
 
 
 // @desc    Delete quote (Admin)

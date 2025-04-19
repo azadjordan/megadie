@@ -9,14 +9,12 @@ import Login from "./pages/Login";
 import Product from "./pages/Product";
 import Register from "./pages/Register";
 import PrivateRoute from "./components/PrivateRoute";
-import OrderConfirmation from "./pages/OrderConfirmation";
 import AccountDashboard from "./pages/account/AccountDashboard";
 import AdminRoute from "./components/AdminRoute";
 import OrderList from "./pages/OrderList";
 import ProductList from "./pages/ProductList";
 import UserList from "./pages/UserList";
 import PaymentList from "./pages/PaymentList";
-import CreatePayment from "./pages/CreatePayment";
 import ScrollToTopButton from "./components/ScrollToTopButton";
 import PaymentUpdate from "./pages/PaymentUpdate.jsx";
 import Shop from "./pages/Shop";
@@ -36,6 +34,8 @@ import UserInvoices from "./pages/account/UserInvoices.jsx";
 import UserPayments from "./pages/account/UserPayments.jsx";
 import UserOrder from "./pages/account/UserOrder.jsx";
 import OrderDetails from "./pages/OrderDetails.jsx";
+import OrderUpdate from "./pages/OrderUpdate.jsx";
+import PaymentAdd from "./pages/PaymentAdd.jsx";
 
 const App = () => {
   return (
@@ -73,7 +73,7 @@ const App = () => {
               <Route path="orders" element={<UserOrders />} />
               <Route path="orders/:id" element={<UserOrder />} />
               <Route path="invoices" element={<UserInvoices />} />
-              <Route path="payments" element={<UserPayments />} />
+              <Route path="payments/my" element={<UserPayments />} />
             </Route>
             <Route path="quotes/quote-success" element={<QuoteSuccess />} />
           </Route>
@@ -81,6 +81,7 @@ const App = () => {
           {/* ✅ Admin Routes */}
           <Route element={<AdminRoute />}>
             <Route path="/admin/orders" element={<OrderList />} />
+            <Route path="/admin/orders/:id/edit" element={<OrderUpdate />} />
             <Route path="/admin/orders/:id" element={<OrderDetails />} />
             <Route path="/admin/products" element={<ProductList />} />
             <Route
@@ -99,7 +100,7 @@ const App = () => {
             <Route path="/admin/quotes/:id/edit" element={<QuoteUpdate />} />
             <Route path="/admin/invoices" element={<InvoiceList />} />
             <Route path="/admin/payments" element={<PaymentList />} />
-            <Route path="/admin/payments/create" element={<CreatePayment />} />
+            <Route path="/admin/invoices/:id/payment" element={<PaymentAdd />} />
             <Route
               path="/admin/payments/:id/edit"
               element={<PaymentUpdate />}

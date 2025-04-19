@@ -5,109 +5,74 @@ const UserRequests = () => {
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold text-purple-700 mb-6">
-        My Requests
-      </h1>
+      <h1 className="text-2xl font-bold text-purple-700 mb-6">My Requests</h1>
 
       {isLoading ? (
         <p className="text-gray-500">Loading your quote requests...</p>
       ) : error ? (
         <p className="text-red-500">Failed to load your requests.</p>
       ) : quotes.length === 0 ? (
-        <p className="text-gray-600">
-          You haven’t submitted any quote requests yet.
-        </p>
+        <p className="text-gray-600">You haven’t submitted any quote requests yet.</p>
       ) : (
         <div className="space-y-6 max-h-[80vh] overflow-y-auto pr-1">
           {quotes.map((quote) => (
             <div
               key={quote._id}
-              className="rounded-xl bg-white shadow-md border border-red-2 px-6 py-5 space-y-4"
+              className="bg-white rounded-xl shadow-sm border border-gray-200 px-6 py-5 space-y-4 hover:shadow-md transition"
             >
               {/* Status + Date */}
-              <div className="flex justify-between items-center">
+              <div className="flex justify-between items-center text-sm">
                 <span
-                  className={`text-xs font-medium px-3 py-1 rounded-full ${
+                  className={`px-3 py-1 rounded-full font-medium text-xs ${
                     quote.status === "Confirmed"
-                      ? "bg-green-200 text-green-800"
+                      ? "bg-green-100 text-green-700"
                       : quote.status === "Rejected"
-                      ? "bg-red-100 text-red-900"
+                      ? "bg-red-100 text-red-700"
                       : quote.status === "Requested"
-                      ? "bg-yellow-100 text-yellow-900"
+                      ? "bg-yellow-100 text-yellow-700"
                       : quote.status === "Quoted"
-                      ? "bg-purple-200 text-purple-700"
-                      : "bg-gray-200 text-gray-600"
+                      ? "bg-purple-100 text-purple-700"
+                      : "bg-gray-100 text-gray-600"
                   }`}
                 >
                   {quote.status}
                 </span>
-
-                <span className="text-sm text-gray-400">
+                <span className="text-gray-400">
                   {new Date(quote.createdAt).toLocaleDateString()}
                 </span>
               </div>
 
               {/* Requested Items */}
               <div className="text-sm text-gray-700 space-y-1">
-                <p className="font-medium text-gray-500">Requested Items</p>
+                <p className="text-gray-500 font-medium mb-1">Requested Items</p>
                 {quote.requestedItems.map((item, i) => (
                   <div key={i}>
-                    •{" "}
-                    <span className="font-semibold">{item.product?.name}</span>{" "}
-                    — {item.qty} pcs
-                    {quote.status === "Quoted" &&
-                      typeof item.unitPrice === "number" && (
-                        <>
-                          {" "}
-                          ={" "}
-                          <span className="font-medium">
-                            {(item.qty * item.unitPrice).toFixed(2)} AED
-                          </span>
-                        </>
-                      )}
+                    • <span className="font-semibold">{item.product?.name}</span> — {item.qty} pcs{" "}
+                    {quote.status === "Quoted" && typeof item.unitPrice === "number" && (
+                      <>
+                        ={" "}
+                        <span className="font-medium">
+                          {(item.qty * item.unitPrice).toFixed(2)} AED
+                        </span>
+                      </>
+                    )}
                   </div>
                 ))}
               </div>
 
-              {/* Pricing Section */}
-              {quote.status === "Quoted" && (
-                <div className="text-sm text-gray-700 bg-gray-50 rounded-xl p-4 space-y-1">
-                  <div className="flex justify-between">
-                    <span>Subtotal</span>
-                    <span>
-                      {quote.requestedItems
-                        .reduce(
-                          (acc, item) => acc + item.qty * item.unitPrice,
-                          0
-                        )
-                        .toFixed(2)}{" "}
-                      AED
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Delivery</span>
-                    <span>{quote.deliveryCharge?.toFixed(2)} AED</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Extra Fee</span>
-                    <span>{quote.extraFee?.toFixed(2)} AED</span>
-                  </div>
-                  <div className="flex justify-between font-semibold text-purple-700 pt-2">
-                    <span>Total</span>
-                    <span>{quote.totalPrice?.toFixed(2)} AED</span>
-                  </div>
+              {/* Pricing */}
+              {(quote.status === "Quoted" || quote.status === "Confirmed" || quote.status === "Rejected") && (
+                <div className="bg-gray-50 rounded-lg p-4 text-sm text-gray-700 space-y-1">
+                  {quote.status === "Quoted" && (
+                    <>
+                      <Row label="Subtotal" value={quote.requestedItems.reduce((acc, item) => acc + item.qty * item.unitPrice, 0).toFixed(2)} />
+                      <Row label="Delivery" value={quote.deliveryCharge?.toFixed(2)} />
+                      <Row label="Extra Fee" value={quote.extraFee?.toFixed(2)} />
+                    </>
+                  )}
+                  <Row label="Total" value={quote.totalPrice?.toFixed(2)} highlight />
                 </div>
               )}
-
-              {(quote.status === "Confirmed" || quote.status === "Rejected") &&
-                typeof quote.totalPrice === "number" && (
-                  <div className="text-sm text-gray-700 bg-gray-50 rounded-xl p-4 space-y-1">
-                    <div className="flex justify-between font-semibold text-purple-700">
-                      <span>Total</span>
-                      <span>{quote.totalPrice.toFixed(2)} AED</span>
-                    </div>
-                  </div>
-                )}
 
               {/* Notes */}
               {quote.clientToAdminNote && (
@@ -118,9 +83,7 @@ const UserRequests = () => {
               )}
               {quote.AdminToClientNote && (
                 <div className="text-sm text-gray-700">
-                  <p className="font-medium text-gray-500 mb-1">
-                    Seller Response
-                  </p>
+                  <p className="font-medium text-gray-500 mb-1">Seller Response</p>
                   <p>{quote.AdminToClientNote}</p>
                 </div>
               )}
@@ -131,5 +94,12 @@ const UserRequests = () => {
     </div>
   );
 };
+
+const Row = ({ label, value, highlight = false }) => (
+  <div className={`flex justify-between ${highlight ? "font-semibold text-purple-700 pt-2" : ""}`}>
+    <span>{label}</span>
+    <span>{value} AED</span>
+  </div>
+);
 
 export default UserRequests;

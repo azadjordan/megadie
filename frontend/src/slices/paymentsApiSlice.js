@@ -1,71 +1,68 @@
+// ✅ paymentsApiSlice.js
 import { PAYMENTS_URL } from "../constants";
 import { apiSlice } from "./apiSlice";
 
 export const paymentsApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    // ✅ Fetch All Payments (Admin Only)
-    getAllPayments: builder.query({
-      query: () => ({
-        url: PAYMENTS_URL,
-        method: "GET",
-      }),
-      providesTags: ["Payments"],
+    // ✅ Get all payments (admin only)
+    getPayments: builder.query({
+      query: () => `${PAYMENTS_URL}`,
+      providesTags: ["Payment"],
+      keepUnusedDataFor: 300,
     }),
 
-    // ✅ Fetch Payments for a Specific User
-    getUserPayments: builder.query({
-      query: (userId) => ({
-        url: `${PAYMENTS_URL}/user/${userId}`,
-        method: "GET",
-      }),
-      providesTags: (result, error, userId) => [{ type: "Payments", id: userId }],
-    }),
-
-    // ✅ Fetch a Single Payment by ID
+    // ✅ Get payment by ID (admin only)
     getPaymentById: builder.query({
-      query: (id) => ({
-        url: `${PAYMENTS_URL}/${id}`,
-        method: "GET",
-      }),
-      providesTags: (result, error, id) => [{ type: "Payments", id }],
+      query: (id) => `${PAYMENTS_URL}/${id}`,
+      providesTags: (result, error, id) => [{ type: "Payment", id }],
+      keepUnusedDataFor: 300,
     }),
 
-    // ✅ Create a New Payment (Admin Only)
-    createPayment: builder.mutation({
-      query: ({ userId, amount, paymentMethod, note }) => ({
-        url: PAYMENTS_URL,
-        method: "POST",
-        body: { userId, amount, paymentMethod, note },
-      }),
-      invalidatesTags: ["Payments"],
+    getMyPayments: builder.query({
+      query: () => `${PAYMENTS_URL}/my`,
+      providesTags: ["Payment"],
+      keepUnusedDataFor: 300,
     }),
+    
 
-    // ✅ Update an Existing Payment (Admin Only)
+// ✅ Create payment from invoice
+addPaymentFromInvoice: builder.mutation({
+  query: ({ invoiceId, ...data }) => ({
+    url: `${PAYMENTS_URL}/from-invoice/${invoiceId}`,
+    method: "POST",
+    body: data,
+  }),
+  invalidatesTags: ["Payment", "Invoice"],
+}),
+
+    // ✅ Update payment (admin only)
     updatePayment: builder.mutation({
-      query: ({ id, updatedData }) => ({
+      query: ({ id, ...data }) => ({
         url: `${PAYMENTS_URL}/${id}`,
         method: "PUT",
-        body: updatedData,
+        body: data,
       }),
-      invalidatesTags: (result, error, { id }) => [{ type: "Payments", id }, "Payments"],
+      invalidatesTags: (result, error, { id }) => [{ type: "Payment", id }],
     }),
 
-    // ✅ Delete a Payment (Admin Only)
+    // ✅ Delete payment (admin only)
     deletePayment: builder.mutation({
       query: (id) => ({
         url: `${PAYMENTS_URL}/${id}`,
         method: "DELETE",
       }),
-      invalidatesTags: ["Payments"],
+      invalidatesTags: ["Payment"],
     }),
   }),
 });
 
 export const {
-  useGetAllPaymentsQuery,
-  useGetUserPaymentsQuery, 
+  useGetPaymentsQuery,
   useGetPaymentByIdQuery,
-  useCreatePaymentMutation,
+  useGetMyPaymentsQuery, // ✅ NEW HOOK
+  useAddPaymentFromInvoiceMutation,
   useUpdatePaymentMutation,
   useDeletePaymentMutation,
 } = paymentsApiSlice;
+
+

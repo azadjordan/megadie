@@ -5,7 +5,8 @@ import {
   createOrderFromQuote,
   getMyOrders,
   getOrderById,
-  deleteOrder, // ✅ NEW
+  deleteOrder,
+  updateOrder, // ✅ Import the update controller
 } from "../controllers/orderController.js";
 import { protect, admin } from "../middleware/authMiddleware.js";
 
@@ -20,10 +21,11 @@ router.get("/my", protect, getMyOrders);
 // ✅ Create order from quote (admin)
 router.post("/from-quote/:quoteId", protect, admin, createOrderFromQuote);
 
-// ✅ Get / Delete order by ID
+// ✅ Get / Update / Delete order by ID
 router
   .route("/:id")
   .get(protect, getOrderById)
-  .delete(protect, admin, deleteOrder); // ✅ ADD DELETE ROUTE
+  .put(protect, admin, updateOrder)    // ✅ Add update route
+  .delete(protect, admin, deleteOrder); // ✅ Delete route
 
 export default router;

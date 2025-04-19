@@ -105,4 +105,36 @@ const createOrderFromQuote = asyncHandler(async (req, res) => {
   res.status(201).json(createdOrder);
 });
 
-export { getOrders, createOrderFromQuote, getMyOrders, getOrderById, deleteOrder };
+// @desc    Update order fields: status, user, and notes
+// @route   PUT /api/orders/:id
+// @access  Private/Admin
+const updateOrder = asyncHandler(async (req, res) => {
+  const order = await Order.findById(req.params.id);
+
+  if (!order) {
+    res.status(404);
+    throw new Error("Order not found.");
+  }
+
+  const { status, user, clientToAdminNote, adminToClientNote, adminToAdminNote } = req.body;
+
+  if (status) {
+    order.status = status;
+    if (status === "Delivered") {
+      order.isDelivered = true;
+      order.deliveredAt = new Date();
+    }
+  }
+
+  if (user) order.user = user;
+  if (clientToAdminNote !== undefined) order.clientToAdminNote = clientToAdminNote;
+  if (adminToClientNote !== undefined) order.adminToClientNote = adminToClientNote;
+  if (adminToAdminNote !== undefined) order.adminToAdminNote = adminToAdminNote;
+
+  const updated = await order.save();
+  res.json(updated);
+});
+
+
+
+export { getOrders, createOrderFromQuote, getMyOrders, getOrderById, deleteOrder, updateOrder };

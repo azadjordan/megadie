@@ -1,163 +1,157 @@
 import asyncHandler from "../middleware/asyncHandler.js";
 import Payment from "../models/paymentModel.js";
-import User from "../models/userModel.js";
+import Invoice from "../models/invoiceModel.js";
 
-// @desc    Delete a payment (Admin only)
-// @route   DELETE /api/payments/:id
+// @desc    Add payment to invoice and update invoice status
+// @route   POST /api/payments/from-invoice/:invoiceId
 // @access  Private/Admin
-const deletePayment = asyncHandler(async (req, res) => {
-    const payment = await Payment.findById(req.params.id).populate("user");
-
-    if (!payment) {
-        res.status(404);
-        throw new Error("Payment not found.");
+const addPaymentToInvoice = asyncHandler(async (req, res) => {
+    const { amount, paymentMethod, note, paymentDate } = req.body;
+    const { invoiceId } = req.params;
+  
+    const invoice = await Invoice.findById(invoiceId);
+    if (!invoice) {
+      res.status(404);
+      throw new Error("Invoice not found");
     }
-
-    // ✅ Prevent deletion if the payment is not cancelled
-    if (payment.status !== "Cancelled") {
-        res.status(400);
-        throw new Error("Payment must be cancelled before deletion.");
+  
+    if (invoice.status === "Paid") {
+      res.status(400);
+      throw new Error("Invoice is already fully paid.");
     }
-
-    const user = await User.findById(payment.user._id);
-    if (!user) {
-        res.status(404);
-        throw new Error("User not found.");
+  
+    const remainingDue = invoice.amountDue - invoice.amountPaid;
+  
+    if (amount <= 0) {
+      res.status(400);
+      throw new Error("Payment amount must be greater than zero.");
     }
-
-    await payment.deleteOne(); // ✅ Delete the payment
-
-    res.json({ message: "Payment deleted successfully." });
-});
-
-
-// @desc    Get payment by ID
-// @route   GET /api/payments/:id
-// @access  Private/Admin
-const getPaymentById = asyncHandler(async (req, res) => {
-    const payment = await Payment.findById(req.params.id).populate("user");
-
-    if (!payment) {
-        res.status(404);
-        throw new Error("Payment not found");
+  
+    if (amount > remainingDue) {
+      res.status(400);
+      throw new Error(
+        `Payment amount exceeds remaining balance. Remaining due: ${remainingDue.toFixed(2)}`
+      );
     }
-
-    res.json(payment);
-});
-
-
-// @desc    Update payment details (Admin only)
-// @route   PUT /api/payments/:id
-// @access  Private/Admin
-const updatePayment = asyncHandler(async (req, res) => {
-    const { status, paymentMethod, note } = req.body;
-
-    const payment = await Payment.findById(req.params.id).populate("user");
-
-    if (!payment) {
-        res.status(404);
-        throw new Error("Payment not found");
-    }
-
-    const user = await User.findById(payment.user._id);
-    if (!user) {
-        res.status(404);
-        throw new Error("User not found");
-    }
-
-    let walletMessage = null; // ✅ Store message for toast feedback
-
-    // ✅ If status is changing, update user's wallet
-    if (status && status !== payment.status) {
-        if (status === "Cancelled" && payment.status === "Received") {
-            user.wallet -= payment.amount;
-            walletMessage = `${user.name}'s wallet decreased by $${payment.amount.toFixed(2)}`;
-        } else if (status === "Received" && payment.status === "Cancelled") {
-            user.wallet += payment.amount;
-            walletMessage = `${user.name}'s wallet increased by $${payment.amount.toFixed(2)}`;
-        }
-    }
-
-    // ✅ Prevent wallet from going negative
-    if (user.wallet < 0) {
-        res.status(400);
-        throw new Error("Insufficient funds in wallet to cancel this payment.");
-    }
-
-    // ✅ Update payment details
-    payment.paymentMethod = paymentMethod || payment.paymentMethod;
-    payment.status = status || payment.status;
-    payment.note = note || payment.note;
-
-    // ✅ Save user and payment updates
-    await user.save();
-    const updatedPayment = await payment.save();
-
-    res.json({
-        message: walletMessage || "Payment updated successfully.",
-        updatedPayment,
-    });
-});
-
-// @desc    Create a new payment (Admin only)
-// @route   POST /api/payments
-// @access  Private/Admin
-const createPayment = asyncHandler(async (req, res) => {
-    const { userId, amount, paymentMethod, note } = req.body;
-
-    // ✅ Check if user exists
-    const user = await User.findById(userId);
-    if (!user) {
-        res.status(404);
-        throw new Error("User not found");
-    }
-
-    // ✅ Validate and convert amount
-    const paymentAmount = Number(amount);
-    if (isNaN(paymentAmount) || paymentAmount <= 0) {
-        res.status(400);
-        throw new Error("Invalid payment amount");
-    }
-
-    // ✅ Create a new payment record
+  
+    // Create new payment
     const payment = new Payment({
-        user: userId,
-        amount: paymentAmount, // Ensure it's a number
-        paymentMethod,
-        note,
+      invoice: invoice._id,
+      user: invoice.user,
+      amount,
+      paymentMethod,
+      note,
+      paymentDate: paymentDate || Date.now(),
     });
-
-    // ✅ Save the payment to the database
+  
     await payment.save();
-
-    // ✅ Update user's wallet balance
-    user.wallet = (user.wallet || 0) + paymentAmount; // Ensure wallet is treated as a number
-    await user.save();
-
+  
+    // Update invoice
+    invoice.amountPaid += amount;
+  
+    if (invoice.amountPaid >= invoice.amountDue) {
+      invoice.status = "Paid";
+      invoice.paidAt = new Date();
+    } else {
+      invoice.status = "Partially Paid";
+    }
+  
+    await invoice.save();
+  
     res.status(201).json({
-        message: `Payment added and Wallet Increased for ${user.name.split(" ")[0]}`,
-        payment,
-        walletBalance: user.wallet,
+      message: "✅ Payment added and invoice updated.",
+      invoice,
+      payment,
+      remainingDue: invoice.amountDue - invoice.amountPaid,
     });
-});
+  });
 
-// @desc    Get all payments (Admin only)
+// @desc    Get all payments (Admin)
 // @route   GET /api/payments
 // @access  Private/Admin
 const getAllPayments = asyncHandler(async (req, res) => {
-    const payments = await Payment.find().populate("user", "name phone");
+    const payments = await Payment.find({})
+      .populate("user", "name email")
+      .populate("invoice", "invoiceNumber amountDue status")
+      .sort({ createdAt: -1 }); // ✅ newest first
+  
     res.json(payments);
+  });
+  
+
+// @desc    Get a payment by ID (Admin)
+// @route   GET /api/payments/:id
+// @access  Private/Admin
+const getPaymentById = asyncHandler(async (req, res) => {
+  const payment = await Payment.findById(req.params.id)
+    .populate("user", "name email")
+    .populate("invoice", "invoiceNumber amountDue status");
+
+  if (!payment) {
+    res.status(404);
+    throw new Error("Payment not found");
+  }
+
+  res.json(payment);
 });
 
-// @desc    Get payments for a specific user
-// @route   GET /api/payments/user/:userId
+// @desc    Get logged-in user's payments
+// @route   GET /api/payments/my
 // @access  Private
-const getUserPayments = asyncHandler(async (req, res) => {
-    const payments = await Payment.find({ user: req.params.userId }).sort({ createdAt: -1 });
-
-    // ✅ Instead of throwing an error, return an empty array if no payments exist
+// ✅ NEW CONTROLLER: getMyPayments
+const getMyPayments = asyncHandler(async (req, res) => {
+    const payments = await Payment.find({ user: req.user._id })
+      .populate("invoice", "invoiceNumber amountDue status")
+      .sort({ createdAt: -1 });
+  
     res.json(payments);
+  });
+  
+
+
+// @desc    Update a payment by ID (Admin only)
+// @route   PUT /api/payments/:id
+// @access  Private/Admin
+const updatePayment = asyncHandler(async (req, res) => {
+  const payment = await Payment.findById(req.params.id);
+
+  if (!payment) {
+    res.status(404);
+    throw new Error("Payment not found");
+  }
+
+  const { amount, paymentMethod, paymentDate, note, status } = req.body;
+
+  payment.amount = amount ?? payment.amount;
+  payment.paymentMethod = paymentMethod ?? payment.paymentMethod;
+  payment.paymentDate = paymentDate ?? payment.paymentDate;
+  payment.note = note ?? payment.note;
+  payment.status = status ?? payment.status;
+
+  const updated = await payment.save();
+  res.json(updated);
 });
 
+// @desc    Delete a payment by ID (Admin only)
+// @route   DELETE /api/payments/:id
+// @access  Private/Admin
+const deletePayment = asyncHandler(async (req, res) => {
+  const payment = await Payment.findById(req.params.id);
 
-export { createPayment, getAllPayments, getUserPayments, updatePayment, getPaymentById, deletePayment };
+  if (!payment) {
+    res.status(404);
+    throw new Error("Payment not found");
+  }
+
+  await payment.deleteOne();
+  res.json({ message: "Payment deleted" });
+});
+
+export {
+  getAllPayments,
+  getPaymentById,
+  updatePayment,
+  deletePayment,
+    addPaymentToInvoice,
+    getMyPayments,
+};

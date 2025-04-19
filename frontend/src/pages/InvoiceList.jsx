@@ -119,7 +119,7 @@ const InvoiceList = () => {
                       <Link to={`/admin/invoices/${invoice._id}/edit`}>
                         <button
                           title="Edit Invoice"
-                          className="text-blue-600 p-2 hover:text-blue-800"
+                          className="text-blue-600 p-2 hover:text-blue-800 cursor-pointer"
                         >
                           <FaEdit />
                         </button>
@@ -128,7 +128,7 @@ const InvoiceList = () => {
                       <button
                         title="Delete Invoice"
                         onClick={() => handleDelete(invoice._id)}
-                        className="text-red-600 p-2 hover:text-red-800"
+                        className="text-red-600 p-2 hover:text-red-800 cursor-pointer"
                       >
                         <FaTrash />
                       </button>
@@ -136,10 +136,19 @@ const InvoiceList = () => {
                       <button
                         title="Share Invoice"
                         onClick={() => handleShare(invoice._id)}
-                        className="text-purple-600 p-2 hover:text-purple-800"
+                        className="text-purple-600 p-2 hover:text-purple-800 cursor-pointer"
                       >
                         <FaShareAlt />
                       </button>
+
+                      <Link to={`/admin/invoices/${invoice._id}/payment`}>
+                        <button
+                          title="Add Payment"
+                          className="text-green-600 p-2 hover:text-green-800 cursor-pointer"
+                        >
+                          💵
+                        </button>
+                      </Link>
                     </div>
                   </td>
                 </tr>

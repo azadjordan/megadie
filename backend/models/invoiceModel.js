@@ -21,10 +21,6 @@ const invoiceSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
-    originalOrderTotal: {
-      type: Number,
-      required: true,
-    },
     amountPaid: {
       type: Number,
       default: 0,

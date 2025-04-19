@@ -22,7 +22,7 @@ const app = express();
 const port = process.env.PORT || 5000;
 
 // ✅ Fix CORS to allow cookies
-const allowedOrigins = ["http://localhost:5173"]; // Change for production
+const allowedOrigins = ['http://localhost:3000', 'http://localhost:5173', 'http://localhost:5174'];
 app.use(
   cors({
     origin: allowedOrigins,

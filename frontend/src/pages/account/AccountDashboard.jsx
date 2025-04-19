@@ -12,17 +12,17 @@ const navItems = [
   { label: "Requests", path: "requests", icon: <FaClipboardList /> },
   { label: "Orders", path: "orders", icon: <FaShoppingCart /> },
   { label: "Invoices", path: "invoices", icon: <FaFileInvoiceDollar /> },
-  { label: "Payments", path: "payments", icon: <FaMoneyCheckAlt /> },
+  { label: "Payments", path: "payments/my", icon: <FaMoneyCheckAlt /> },
 ];
 
 const AccountDashboard = () => {
   return (
-    <div className="flex min-h-screen  bg-gray-50">
+    <div className="flex min-h-screen bg-gray-50">
       {/* Sidebar */}
-      <aside className="w-64 bg-white border-r shadow-sm hidden md:flex flex-col p-6">
-        <h2 className="text-2xl font-bold text-purple-700 mb-8">My Account</h2>
+      <aside className="w-64 bg-white border-r border-gray-200 shadow-sm hidden md:flex flex-col p-6">
+        <h2 className="text-2xl font-bold text-purple-700 mb-10">my Account</h2>
 
-        <nav className="space-y-3">
+        <nav className="flex flex-col gap-2">
           {navItems.map(({ label, path, icon }) => (
             <NavLink
               key={path}
@@ -43,13 +43,13 @@ const AccountDashboard = () => {
         </nav>
       </aside>
 
-      {/* Mobile Sidebar Placeholder */}
+      {/* Mobile notice */}
       <div className="md:hidden w-full text-center p-4 text-sm text-gray-500">
-        📱 Sidebar navigation available on desktop
+        📱 Sidebar available on desktop
       </div>
 
-      {/* Page Content */}
-      <main className="flex-1 p-6 md:p-10">
+      {/* Main content */}
+      <main className="flex-1 p-6 md:p-10 bg-white rounded-tl-2xl shadow-inner">
         <Outlet />
       </main>
     </div>

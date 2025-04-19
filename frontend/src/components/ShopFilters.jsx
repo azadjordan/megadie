@@ -23,7 +23,6 @@ const ShopFilters = () => {
   const productTypes = [...new Set(categories.map((cat) => cat.productType))];
   const relatedCategories = categories.filter(cat => cat.productType === selectedProductType);
 
-  // ✅ Gather and merge filters from selected categories
   const allFilters = selectedCategoryIds.length > 0
     ? relatedCategories.filter(cat => selectedCategoryIds.includes(cat._id)).flatMap(cat => cat.filters || [])
     : relatedCategories.flatMap(cat => cat.filters || []);
@@ -35,28 +34,27 @@ const ShopFilters = () => {
       merged[key] = { ...filter, values: [...filter.values] };
     } else {
       const combined = [...merged[key].values, ...filter.values];
-      merged[key].values = [...new Set(combined)];
+      merged[key].values = [...new Set(combined)].sort();
     }
-    merged[key].values.sort(); // optional sort
   }
 
   const filterSource = Object.values(merged).sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 
   return (
-    <div className="bg-white rounded-xl border border-gray-300 text-sm text-gray-300 divide-y">
+    <div className="bg-white rounded-xl shadow-sm border border-gray-300 text-sm divide-gray-300 divide-y">
       {/* 🔹 Product Types */}
-      <div className="p-4">
-        <h3 className="text-base font-semibold text-purple-700 mb-3 flex items-center gap-2">
-          <FaBoxOpen className="text-purple-500" /> Product Type:
+      <div className="p-5">
+        <h3 className="text-base font-semibold text-gray-800 mb-3 flex items-center gap-2">
+          <FaBoxOpen className="text-purple-500" /> Product Type
         </h3>
         <div className="flex flex-col gap-2">
           {productTypes.map((type) => (
             <button
               key={type}
               onClick={() => dispatch(setProductType(type))}
-              className={`text-left px-3 py-2 rounded text-sm font-medium transition ${
+              className={`text-left px-3 py-2 rounded-md text-sm font-medium transition ${
                 selectedProductType === type
-                  ? "bg-purple-600 text-white"
+                  ? "bg-purple-500 text-white"
                   : "hover:bg-purple-100 text-gray-800"
               }`}
             >
@@ -68,14 +66,14 @@ const ShopFilters = () => {
 
       {/* 🔹 Filters Section */}
       {selectedProductType && (
-        <div className="p-4 space-y-6">
-          <h4 className="text-base font-semibold text-purple-700 flex items-center gap-2">
-            <FaFilter className="text-purple-500" /> Filter Results:
+        <div className="p-5 space-y-6">
+          <h4 className="text-base font-semibold text-gray-800 flex items-center gap-2">
+            <FaFilter className="text-purple-500" /> Filter Results
           </h4>
 
           {/* 🔸 Categories */}
           <div>
-            <p className="font-medium text-gray-800 mb-2">Categories:</p>
+            <p className="font-medium text-gray-700 mb-2">Categories:</p>
             <div className="flex flex-wrap gap-2">
               {relatedCategories.map((cat) => {
                 const isSelected = selectedCategoryIds.includes(cat._id);
@@ -83,7 +81,7 @@ const ShopFilters = () => {
                   <span
                     key={cat._id}
                     onClick={() => dispatch(setCategoryId(cat._id))}
-                    className={`cursor-pointer px-6 py-2 rounded-md text-sm transition ${
+                    className={`cursor-pointer px-4 py-2 rounded-md text-sm transition ${
                       isSelected
                         ? "bg-purple-200 text-purple-800"
                         : "bg-gray-100 hover:bg-gray-200 text-gray-700"
@@ -111,7 +109,7 @@ const ShopFilters = () => {
                           onClick={() => dispatch(toggleAttributeValue({ key: filter.Key, value }))}
                           className={`cursor-pointer px-3 py-1 rounded-md text-sm transition ${
                             isSelected
-                              ? "bg-purple-200 text-purple-800"
+                              ? "bg-purple-200 text-purple-500"
                               : "bg-gray-100 hover:bg-gray-200 text-gray-700"
                           }`}
                         >
@@ -129,7 +127,7 @@ const ShopFilters = () => {
           <div className="pt-4 border-t border-gray-200">
             <button
               onClick={() => dispatch(resetFilters())}
-              className="mt-3 inline-block text-sm font-medium bg-gray-100 border border-gray-300 px-3 py-2 text-gray-500 hover:text-red-500 transition"
+              className="mt-3 inline-block text-sm font-medium bg-gray-50 border border-gray-300 px-4 py-2 text-gray-500 hover:text-red-500 hover:border-red-300 transition rounded"
             >
               Clear Filters
             </button>

@@ -4,3 +4,13 @@
     z-index: 9999 !important; /* ✅ Ensures Toasts Appear on Top */
   }
   
+  /* Hide number input spinners across browsers */
+.no-spinner::-webkit-outer-spin-button,
+.no-spinner::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.no-spinner {
+  -moz-appearance: textfield; /* Firefox */
+}

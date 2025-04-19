@@ -33,7 +33,9 @@ const OrderList = () => {
   };
 
   const handleDelete = async (orderId) => {
-    const confirmDelete = window.confirm("Are you sure you want to delete this order?");
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this order?"
+    );
     if (!confirmDelete) return;
 
     try {
@@ -48,7 +50,9 @@ const OrderList = () => {
 
   return (
     <div className="p-6 w-full">
-      <h2 className="text-2xl font-semibold text-purple-700 mb-4">All Orders</h2>
+      <h2 className="text-2xl font-semibold text-purple-700 mb-4">
+        All Orders
+      </h2>
 
       {isLoading ? (
         <p className="text-gray-500">Loading orders...</p>
@@ -82,7 +86,9 @@ const OrderList = () => {
                   <td className="px-4 py-2">{order.user?.name || "N/A"}</td>
                   <td className="px-4 py-2">{order.status}</td>
                   <td className="px-4 py-2">{order.orderItems.length}</td>
-                  <td className="px-4 py-2">{order.totalPrice.toFixed(2)} AED</td>
+                  <td className="px-4 py-2">
+                    {order.totalPrice.toFixed(2)} AED
+                  </td>
                   <td className="px-4 py-2">
                     {order.isDelivered ? (
                       <span className="text-green-600">Yes</span>
@@ -92,7 +98,9 @@ const OrderList = () => {
                   </td>
                   <td className="px-4 py-2">
                     {order.invoiceGenerated ? (
-                      <span className="text-green-700 font-medium">Generated</span>
+                      <span className="text-green-700 font-medium">
+                        Generated
+                      </span>
                     ) : (
                       <button
                         onClick={() => handleGenerateInvoice(order)}
@@ -103,20 +111,28 @@ const OrderList = () => {
                       </button>
                     )}
                   </td>
-                  <td className="px-4 py-2">
-                    <div className="flex items-center space-x-3">
+                  <td className="py-2">
+                    <div className="flex items-center">
                       <Link to={`/admin/orders/${order._id}`}>
                         <button
                           title="View Order"
-                          className="text-blue-600 hover:text-blue-800"
+                          className="text-blue-600 hover:text-blue-800 p-2  cursor-pointer"
                         >
                           <FaEye />
+                        </button>
+                      </Link>
+                      <Link to={`/admin/orders/${order._id}/edit`}>
+                        <button
+                          title="Edit Order"
+                          className="text-indigo-600 hover:text-indigo-800 p-2 cursor-pointer"
+                        >
+                          ✏️
                         </button>
                       </Link>
                       <button
                         title="Delete Order"
                         onClick={() => handleDelete(order._id)}
-                        className="text-red-600 hover:text-red-800"
+                        className="text-red-600 hover:text-red-800 p-2 cursor-pointer"
                       >
                         <FaTrash />
                       </button>
