@@ -40,26 +40,26 @@ const ProductCard = ({ product }) => {
         </Link>
 
         {displaySpecs && (
-  <p className="text-sm text-gray-600 mt-1 line-clamp-2">
-    {displaySpecs}
-  </p>
-)}
+          <p className="text-sm text-gray-600 mt-1 line-clamp-2">
+            {displaySpecs}
+          </p>
+        )}
 
-<p className="text-xs text-gray-500 mt-1">
-  <span className="font-medium text-gray-700">MOQ:</span> {product.moq}
-</p>
-
-
+        <p className="text-xs text-gray-500 mt-2 bg-yellow-50 px-1 w-fit ">
+          <span className="font-medium text-gray-700">MOQ:</span> {product.moq}
+        </p>
       </div>
 
       {/* ✅ Bottom Section: Quantity + Add to Cart */}
-      <div className="px-4 pb-4 flex items-center justify-between">
+      <div className="mt-2 px-1 sm:px-4 pb-4 flex items-center justify-between">
         <QuantityControl quantity={quantity} setQuantity={setQuantity} />
 
         <button
           disabled={!product.isAvailable || isAdded}
           onClick={handleAddToCart}
-          className={`p-2 cursor-pointer rounded-full shadow-md transition flex items-center justify-center ${
+          aria-label={isAdded ? "Added to cart" : "Add to cart"}
+          title={isAdded ? "Added to cart" : "Add to cart"}
+          className={`p-1 py-2 rounded-md sm:p-2 cursor-pointer sm:rounded-full shadow-md transition flex items-center justify-center ${
             isAdded
               ? "bg-green-500 text-white"
               : "bg-purple-400 text-white hover:bg-purple-500"

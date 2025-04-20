@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { useGetMyQuotesQuery } from "../../slices/quotesApiSlice";
 
 const UserRequests = () => {
@@ -12,13 +13,23 @@ const UserRequests = () => {
       ) : error ? (
         <p className="text-red-500">Failed to load your requests.</p>
       ) : quotes.length === 0 ? (
-        <p className="text-gray-600">You haven’t submitted any quote requests yet.</p>
+        <div className="text-center py-10 bg-white rounded-xl shadow-sm border border-gray-200">
+          <p className="text-gray-600 text-sm mb-4">
+            You haven’t submitted any quote requests yet.
+          </p>
+          <Link
+            to="/shop"
+            className="inline-block bg-purple-500 hover:bg-purple-600 text-white text-sm font-medium px-6 py-2 rounded transition"
+          >
+            Browse Products
+          </Link>
+        </div>
       ) : (
         <div className="space-y-6 max-h-[80vh] overflow-y-auto pr-1">
           {quotes.map((quote) => (
             <div
               key={quote._id}
-              className="bg-white rounded-xl shadow-sm border border-gray-200 px-6 py-5 space-y-4 hover:shadow-md transition"
+              className="bg-white rounded-xl shadow-sm border border-gray-300 px-6 py-5 space-y-4 hover:shadow-lg transition"
             >
               {/* Status + Date */}
               <div className="flex justify-between items-center text-sm">
@@ -61,11 +72,18 @@ const UserRequests = () => {
               </div>
 
               {/* Pricing */}
-              {(quote.status === "Quoted" || quote.status === "Confirmed" || quote.status === "Rejected") && (
+              {(quote.status === "Quoted" ||
+                quote.status === "Confirmed" ||
+                quote.status === "Rejected") && (
                 <div className="bg-gray-50 rounded-lg p-4 text-sm text-gray-700 space-y-1">
                   {quote.status === "Quoted" && (
                     <>
-                      <Row label="Subtotal" value={quote.requestedItems.reduce((acc, item) => acc + item.qty * item.unitPrice, 0).toFixed(2)} />
+                      <Row
+                        label="Subtotal"
+                        value={quote.requestedItems
+                          .reduce((acc, item) => acc + item.qty * item.unitPrice, 0)
+                          .toFixed(2)}
+                      />
                       <Row label="Delivery" value={quote.deliveryCharge?.toFixed(2)} />
                       <Row label="Extra Fee" value={quote.extraFee?.toFixed(2)} />
                     </>
@@ -96,7 +114,11 @@ const UserRequests = () => {
 };
 
 const Row = ({ label, value, highlight = false }) => (
-  <div className={`flex justify-between ${highlight ? "font-semibold text-purple-700 pt-2" : ""}`}>
+  <div
+    className={`flex justify-between ${
+      highlight ? "font-semibold text-purple-700 pt-2" : ""
+    }`}
+  >
     <span>{label}</span>
     <span>{value} AED</span>
   </div>

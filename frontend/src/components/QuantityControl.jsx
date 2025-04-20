@@ -28,10 +28,12 @@ const QuantityControl = ({ quantity, setQuantity }) => {
   };
 
   return (
-    <div className="flex w-fit rounded-lg border border-gray-300 overflow-hidden">
+    <div className="flex w-fit rounded-lg border border-gray-300 overflow-hidden h-full">
       <button
         onClick={decrement}
         disabled={parseInt(quantity) <= 1}
+        aria-label="Decrease quantity"
+        title="Decrease quantity"
         className="bg-[#eeeeee] px-3 text-gray-500 hover:text-purple-600 hover:bg-[#e5e5e5] cursor-pointer disabled:opacity-30"
       >
         <FaMinus size={12} />
@@ -43,11 +45,15 @@ const QuantityControl = ({ quantity, setQuantity }) => {
         value={quantity}
         onChange={handleChange}
         onBlur={handleBlur}
+        aria-label="Product quantity"
+        title="Product quantity"
         className="no-spinner w-12 text-center text-sm font-semibold bg-white h-full py-1 focus:outline-none"
       />
 
       <button
         onClick={increment}
+        aria-label="Increase quantity"
+        title="Increase quantity"
         className="bg-[#eeeeee] px-3 text-gray-500 hover:text-purple-600 hover:bg-[#e5e5e5] cursor-pointer"
       >
         <FaPlus size={12} />

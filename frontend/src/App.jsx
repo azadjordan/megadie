@@ -1,4 +1,4 @@
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes, Navigate } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Header from "./components/Header";
@@ -25,7 +25,6 @@ import InvoiceList from "./pages/InvoiceList";
 import AdminHeader from "./components/AdminHeader"; // ✅ Admin Navigation
 import ProductUpdate from "./pages/ProductUpdate.jsx";
 import UserUpdate from "./pages/UserUpdate.jsx";
-import QuoteSuccess from "./pages/QuoteSuccess.jsx";
 import QuoteUpdate from "./pages/QuoteUpdate.jsx";
 import UserProfile from "./pages/account/UserProfile.jsx";
 import UserRequests from "./pages/account/UserRequests.jsx";
@@ -43,7 +42,7 @@ const App = () => {
       {/* ✅ ToastContainer placed above everything */}
       <ToastContainer
         position="top-right"
-        autoClose={2500}
+        autoClose={3000}
         hideProgressBar={false}
         newestOnTop
         closeOnClick
@@ -52,6 +51,8 @@ const App = () => {
         draggable
         pauseOnHover
         theme="light"
+        style={{ marginTop: "60px" }} // 👈 shifts it lower
+
       />
 
       <Header />
@@ -68,6 +69,7 @@ const App = () => {
 
           <Route element={<PrivateRoute />}>
             <Route path="/account" element={<AccountDashboard />}>
+            <Route index element={<Navigate to="requests" replace />} />
               <Route path="profile" element={<UserProfile />} />
               <Route path="requests" element={<UserRequests />} />
               <Route path="orders" element={<UserOrders />} />
@@ -75,7 +77,6 @@ const App = () => {
               <Route path="invoices" element={<UserInvoices />} />
               <Route path="payments/my" element={<UserPayments />} />
             </Route>
-            <Route path="quotes/quote-success" element={<QuoteSuccess />} />
           </Route>
 
           {/* ✅ Admin Routes */}

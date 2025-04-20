@@ -10,7 +10,7 @@ const Login = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { userInfo } = useSelector((state) => state.auth);
-  const [login, { isLoading, error }] = useLoginMutation();
+  const [login, { isLoading }] = useLoginMutation();
 
   useEffect(() => {
     if (userInfo) {
@@ -45,44 +45,62 @@ const Login = () => {
   };
 
   return (
-    <div className="max-w-lg mx-auto px-6 py-12 bg-white shadow-md rounded-lg mt-[100px]">
-      <h2 className="text-3xl font-semibold text-center text-gray-800 mb-6">Sign In</h2>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+      <div className="w-full max-w-lg bg-white shadow-lg rounded-2xl p-14 ">
+        <h2 className="text-2xl sm:text-3xl font-bold text-purple-500 text-center mb-6">
+          Sign In
+        </h2>
 
-      {errors.apiError && <p className="text-red-500 text-center mb-4">{errors.apiError}</p>}
+        {errors.apiError && (
+          <p className="text-red-600 text-sm text-center bg-red-50 border border-red-200 p-2 rounded mb-4">
+            {errors.apiError}
+          </p>
+        )}
 
-      <form onSubmit={submitHandler} className="space-y-4">
-        {["email", "password"].map((field, index) => (
-          <div key={index}>
-            <label className="block text-sm font-medium text-gray-700 capitalize">{field}</label>
-            <input
-              type={field.includes("password") ? "password" : "text"}
-              name={field}
-              placeholder={`Enter your ${field}`}
-              className={`w-full p-3 border rounded-md focus:ring focus:ring-purple-200 ${
-                errors[field] ? "border-red-500 ring-red-200" : "border-gray-300"
-              }`}
-              value={formData[field]}
-              onChange={handleChange}
-            />
-            {errors[field] && <p className="text-red-500 text-xs mt-1">{errors[field]}</p>}
-          </div>
-        ))}
+        <form onSubmit={submitHandler} className="space-y-5">
+          {["email", "password"].map((field, idx) => (
+            <div key={idx}>
+              <label className="block text-sm font-medium text-gray-700 capitalize mb-1">
+                {field}
+              </label>
+              <input
+                type={field === "password" ? "password" : "email"}
+                name={field}
+                placeholder={`Enter your ${field}`}
+                value={formData[field]}
+                onChange={handleChange}
+                className={`w-full p-3 rounded-md text-sm border focus:outline-none transition focus:ring-2 ${
+                  errors[field]
+                    ? "border-red-500 ring-red-200"
+                    : "border-gray-300 focus:ring-purple-300"
+                }`}
+              />
+              {errors[field] && (
+                <p className="text-red-500 text-xs mt-1">{errors[field]}</p>
+              )}
+            </div>
+          ))}
 
-        <button
-          type="submit"
-          className="w-full bg-purple-500 text-white font-bold py-3 rounded-md hover:bg-purple-600 transition cursor-pointer"
-          disabled={isLoading}
-        >
-          {isLoading ? "Logging in..." : "Login"}
-        </button>
-      </form>
+          <button
+            type="submit"
+            disabled={isLoading}
+            className={`w-full py-3 font-semibold text-white rounded-md transition ${
+              isLoading
+                ? "bg-purple-300 cursor-not-allowed"
+                : "bg-purple-500 hover:bg-purple-600 cursor-pointer"
+            }`}
+          >
+            {isLoading ? "Logging in..." : "Login"}
+          </button>
+        </form>
 
-      <p className="text-center text-sm text-gray-600 mt-4">
-        Not registered?{" "}
-        <Link to="/register" className="text-blue-600 hover:underline">
-          Register Now
-        </Link>
-      </p>
+        <p className="text-center text-sm text-gray-600 mt-6">
+          Don’t have an account?{" "}
+          <Link to="/register" className="text-purple-500 hover:underline">
+            Register here
+          </Link>
+        </p>
+      </div>
     </div>
   );
 };

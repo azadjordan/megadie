@@ -59,6 +59,10 @@ const Product = () => {
               src={image}
               alt={product.name}
               className="w-full h-[500px] object-cover"
+              onError={(e) => {
+                e.target.onerror = null;
+                e.target.src = "/placeholder.jpg";
+              }}
             />
           </div>
 
@@ -75,6 +79,10 @@ const Product = () => {
                       ? "border-purple-500 ring-2 ring-purple-200"
                       : "border-gray-300"
                   }`}
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = "/placeholder.jpg";
+                  }}
                 />
               ))}
             </div>
@@ -82,13 +90,15 @@ const Product = () => {
         </div>
 
         {/* Right: Product Details */}
-        <div className="bg-white p-2 rounded-xl  space-y-6">
+        <div className="bg-white shadow-sm rounded-2xl p-6 space-y-6 border border-gray-100">
           <div className="space-y-3">
             <h1 className="text-3xl font-bold text-gray-900">{product.name}</h1>
             <p className="text-sm text-gray-500">
-              <span className="font-medium text-gray-700">Category:</span> {product.category?.name || "N/A"}
+              <span className="font-medium text-gray-700">Category:</span>{" "}
+              {product.category?.name || "N/A"}
             </p>
-            <div>
+
+            <div className="flex flex-wrap items-center gap-3 mt-2">
               {product.isAvailable ? (
                 <span className="inline-block text-xs font-semibold text-green-700 bg-green-100 px-3 py-1 rounded-full">
                   In Stock
@@ -98,12 +108,15 @@ const Product = () => {
                   Currently Unavailable
                 </span>
               )}
+              <span className="inline-block text-xs font-semibold text-yellow-800 bg-yellow-50 border border-yellow-200 px-3 py-1 rounded-full">
+                MOQ: {product.moq}
+              </span>
             </div>
           </div>
 
           {product.displaySpecs && (
-            <div>
-              <h3 className="text-lg font-semibold text-gray-800 mb-2">Key Features</h3>
+            <div className="pt-4 border-t border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-800 mb-2 mt-4">Key Features</h3>
               <ul className="list-disc list-inside text-sm text-gray-700 space-y-1">
                 {product.displaySpecs.split("\n").map((line, idx) => (
                   <li key={idx}>{line}</li>
@@ -113,43 +126,45 @@ const Product = () => {
           )}
 
           {product.description && (
-            <div>
-              <h3 className="text-lg font-semibold text-gray-800 mb-2">Description</h3>
-              <p className="text-sm text-gray-600 leading-relaxed">{product.description}</p>
+            <div className="pt-4 border-t border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-800 mb-2 mt-4">Description</h3>
+              <p className="text-sm text-gray-600 leading-relaxed">
+                {product.description}
+              </p>
             </div>
           )}
 
-          <div className="bg-yellow-100 rounded px-2 w-fit">
-            <p className="text-sm text-gray-700">
-              <span className="font-medium text-gray-800">MOQ:</span> {product.moq} units
-            </p>
-          </div>
+          <div className="pt-4 border-t border-gray-200">
+          <div className="flex flex-row gap-4 items-stretch mt-4">
+  <div className="flex-1 sm:flex-none">
+    <QuantityControl quantity={quantity} setQuantity={setQuantity} />
+  </div>
+  <button
+    onClick={handleAddToCart}
+    disabled={!product.isAvailable || isAdded}
+    className={`px-6 text-md font-semibold rounded-md transition ${
+      !product.isAvailable
+        ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+        : isAdded
+        ? "bg-green-500 text-white"
+        : "bg-purple-600 text-white hover:bg-purple-700"
+    }`}
+  >
+    <span className="flex items-center justify-center gap-2 h-12">
+      {isAdded ? (
+        <>
+          <FaCheck /> Added to Cart
+        </>
+      ) : (
+        <>
+          <FaShoppingCart /> Add to Cart
+        </>
+      )}
+    </span>
+  </button>
+</div>
 
-          <div className="pt-2">
-            <div className="flex flex-row gap-4">
-            <QuantityControl quantity={quantity} setQuantity={setQuantity} />
-            <button
-                onClick={handleAddToCart}
-                disabled={!product.isAvailable || isAdded}
-                className={` px-6 py-3 text-md font-semibold rounded-md transition ${
-                  !product.isAvailable
-                    ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                    : isAdded
-                    ? "bg-green-500 text-white"
-                    : "bg-purple-600 text-white hover:bg-purple-700"
-                }`}
-              >
-                {isAdded ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <FaCheck /> Added to Cart
-                  </span>
-                ) : (
-                  <span className="flex items-center justify-center gap-2">
-                    <FaShoppingCart /> Add to Cart
-                  </span>
-                )}
-              </button>
-            </div>
+
           </div>
         </div>
       </div>

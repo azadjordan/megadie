@@ -99,7 +99,7 @@ const NavLinks = ({ mobile, onClick, userInfo, totalQuantity, bounce, onLogout }
 
       {userInfo ? (
         <>
-          <NavLink to="/account/profile" className={navLinkClass} onClick={onClick}>
+          <NavLink to="/account" className={navLinkClass} onClick={onClick}>
             <FaUser size={22} /> {firstName}
           </NavLink>
 

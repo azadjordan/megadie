@@ -44,15 +44,15 @@ const ShopFilters = () => {
     <div className="bg-white rounded-xl shadow-sm border border-gray-300 text-sm divide-gray-300 divide-y">
       {/* 🔹 Product Types */}
       <div className="p-5">
-        <h3 className="text-base font-semibold text-gray-800 mb-3 flex items-center gap-2">
-          <FaBoxOpen className="text-purple-500" /> Product Type
+        <h3 className="text-base font-semibold text-purple-600 mb-3 flex items-center gap-2">
+          <FaBoxOpen/> Product Type
         </h3>
         <div className="flex flex-col gap-2">
           {productTypes.map((type) => (
             <button
               key={type}
               onClick={() => dispatch(setProductType(type))}
-              className={`text-left px-3 py-2 rounded-md text-sm font-medium transition ${
+              className={`cursor-pointer text-left px-3 py-2 rounded-md text-sm font-medium transition ${
                 selectedProductType === type
                   ? "bg-purple-500 text-white"
                   : "hover:bg-purple-100 text-gray-800"
@@ -67,8 +67,8 @@ const ShopFilters = () => {
       {/* 🔹 Filters Section */}
       {selectedProductType && (
         <div className="p-5 space-y-6">
-          <h4 className="text-base font-semibold text-gray-800 flex items-center gap-2">
-            <FaFilter className="text-purple-500" /> Filter Results
+          <h4 className="text-base font-semibold text-purple-600 flex items-center gap-2">
+            <FaFilter/> Filter Results
           </h4>
 
           {/* 🔸 Categories */}
@@ -127,9 +127,9 @@ const ShopFilters = () => {
           <div className="pt-4 border-t border-gray-200">
             <button
               onClick={() => dispatch(resetFilters())}
-              className="mt-3 inline-block text-sm font-medium bg-gray-50 border border-gray-300 px-4 py-2 text-gray-500 hover:text-red-500 hover:border-red-300 transition rounded"
+              className="cursor-pointer mt-3 inline-block text-sm font-medium bg-gray-50 border border-gray-300 px-4 py-2 text-gray-500 hover:text-red-500 hover:border-red-300 transition rounded"
             >
-              Clear Filters
+              Reset Filters
             </button>
           </div>
         </div>
