@@ -69,6 +69,13 @@ const UserRequests = () => {
                     )}
                   </div>
                 ))}
+
+                {/* Friendly message for Requested quotes */}
+                {quote.status === "Requested" && (
+                  <div className="w-fit text-sm text-blue-700 bg-blue-50 border border-blue-200 rounded-md px-4 py-3 mt-3">
+                    We’ll get back to you soon with the best offer, stay tuned!
+                  </div>
+                )}
               </div>
 
               {/* Pricing */}

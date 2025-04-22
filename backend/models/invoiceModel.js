@@ -2,16 +2,22 @@ import mongoose from "mongoose";
 
 const invoiceSchema = new mongoose.Schema(
   {
-    order: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Order",
-      required: true,
-    },
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
+    order: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Order",
+      required: true,
+    },
+    payments: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Payment",
+      },
+    ],
     invoiceNumber: {
       type: String,
       required: true,
@@ -36,12 +42,16 @@ const invoiceSchema = new mongoose.Schema(
       enum: ["Unpaid", "Partially Paid", "Paid", "Overdue"],
       default: "Unpaid",
     },
-    adminNote: { type: String, default: "" },
+    adminNote: {
+      type: String,
+      default: "",
+    },
+
   },
   { timestamps: true }
 );
 
-// 🔄 Auto-generate invoice number before validation
+// 🔄 Auto-generate invoice number before saving
 invoiceSchema.pre("validate", async function (next) {
   if (!this.invoiceNumber) {
     const lastInvoice = await mongoose

@@ -78,8 +78,8 @@ const ProductList = () => {
   };
 
   return (
-<div className="flex flex-col md:flex-row gap-4 p-6 w-full">
-{/* 🔹 Sidebar Filters */}
+    <div className="flex flex-col md:flex-row gap-4 p-6 w-full">
+      {/* 🔹 Sidebar Filters */}
       <aside className="w-full md:w-1/5">
         <AdminProductFilters />
       </aside>
@@ -103,42 +103,51 @@ const ProductList = () => {
         ) : products.length === 0 ? (
           <p className="text-gray-600">No products found.</p>
         ) : (
-          <div className="overflow-x-auto border rounded">
-            <table className="min-w-full text-sm text-left">
-              <thead className="bg-gray-100 text-gray-700">
-                <tr>
-                  <th className="px-4 py-2">Name</th>
-                  <th className="px-4 py-2">Category</th>
-                  <th className="px-4 py-2">Type</th>
-                  <th className="px-4 py-2">Code</th>
-                  <th className="px-4 py-2">Size</th>
-                  <th className="px-4 py-2">Stock</th>
-                  <th className="px-4 py-2">Price</th>
-                  <th className="px-4 py-2">Actions</th>
+          <div className="overflow-x-auto rounded border border-gray-200">
+            <table className="min-w-full text-sm">
+              <thead className="bg-gray-50 text-gray-700 text-left">
+                <tr className="border-b border-gray-200">
+                  <th className="px-4 py-3 font-medium">Name</th>
+                  <th className="px-4 py-3 font-medium">Category</th>
+                  <th className="px-4 py-3 font-medium">Type</th>
+                  <th className="px-4 py-3 font-medium">Code</th>
+                  <th className="px-4 py-3 font-medium">Size</th>
+                  <th className="px-4 py-3 font-medium">Stock</th>
+                  <th className="px-4 py-3 font-medium">Price</th>
+                  <th className="px-4 py-3 font-medium text-center">Actions</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-gray-100">
                 {products.map((prod) => (
-                  <tr key={prod._id} className="border-t hover:bg-gray-50">
-                    <td className="px-4 py-2">{prod.name}</td>
-                    <td className="px-4 py-2">{prod.category?.name || "-"}</td>
-                    <td className="px-4 py-2">{prod.productType}</td>
-                    <td className="px-4 py-2">{prod.code || "-"}</td>
-                    <td className="px-4 py-2">{prod.size}</td>
-                    <td className="px-4 py-2">{prod.stock}</td>
-                    <td className="px-4 py-2">{prod.price?.toFixed(2)} AED</td>
-                    <td className="px-4 py-2 space-x-2">
-                      <Link to={`/admin/products/${prod._id}/edit`}>
-                        <button className="text-purple-600 hover:text-purple-800">
-                          <FaEdit />
+                  <tr
+                    key={prod._id}
+                    className="hover:bg-gray-200 transition-colors duration-150"
+                  >
+                    <td className="px-4 py-3">{prod.name}</td>
+                    <td className="px-4 py-3">{prod.category?.name || "-"}</td>
+                    <td className="px-4 py-3">{prod.productType}</td>
+                    <td className="px-4 py-3">{prod.code || "-"}</td>
+                    <td className="px-4 py-3">{prod.size}</td>
+                    <td className="px-4 py-3">{prod.stock}</td>
+                    <td className="px-4 py-3">{prod.price?.toFixed(2)} AED</td>
+                    <td className="px-4 py-3 text-center">
+                      <div className="flex justify-center items-end space-x-1">
+                        <Link to={`/admin/products/${prod._id}/edit`}>
+                          <button
+                            className="p-2 text-purple-600 hover:text-purple-800 cursor-pointer"
+                            title="Edit Product"
+                          >
+                            <FaEdit />
+                          </button>
+                        </Link>
+                        <button
+                          onClick={() => handleDeleteProduct(prod._id)}
+                          className="p-2 text-red-600 hover:text-red-800 cursor-pointer"
+                          title="Delete Product"
+                        >
+                          <FaTrash />
                         </button>
-                      </Link>
-                      <button
-                        onClick={() => handleDeleteProduct(prod._id)}
-                        className="text-red-600 hover:text-red-800"
-                      >
-                        <FaTrash />
-                      </button>
+                      </div>
                     </td>
                   </tr>
                 ))}

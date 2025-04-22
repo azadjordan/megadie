@@ -28,9 +28,10 @@ const QuoteList = () => {
   };
 
   const handleShare = (quoteId) => {
-    const shareUrl = `${window.location.origin}/admin/quotes/${quoteId}/edit`;
-    navigator.clipboard.writeText(shareUrl);
-    alert("Link copied to clipboard!");
+    const url = `${
+      import.meta.env.VITE_API_URL || "http://localhost:5000"
+    }/api/quotes/${quoteId}/pdf`;
+    window.open(url, "_blank");
   };
 
   const handleCreateOrder = async (quoteId) => {
@@ -57,91 +58,94 @@ const QuoteList = () => {
       ) : quotes.length === 0 ? (
         <p className="text-gray-600">No quote requests found.</p>
       ) : (
-        <div className="overflow-x-auto border rounded">
-          <table className="min-w-full text-sm text-left">
-            <thead className="bg-gray-100 text-gray-700">
-              <tr>
-                <th className="px-4 py-2">Created At</th>
-                <th className="px-4 py-2">User</th>
-                <th className="px-4 py-2">Status</th>
-                <th className="px-4 py-2">Client Note</th>
-                <th className="px-4 py-2">Items</th>
-                <th className="px-4 py-2">Total (AED)</th>
-                <th className="px-4 py-2">Order</th>
-                <th className="px-4 py-2">Actions</th>
+        <div className="overflow-x-auto rounded border border-gray-200">
+          <table className="min-w-full text-sm">
+            <thead className="bg-gray-50 text-gray-700 text-left">
+              <tr className="border-b border-gray-200">
+                <th className="px-4 py-3 font-medium">Created At</th>
+                <th className="px-4 py-3 font-medium">User</th>
+                <th className="px-4 py-3 font-medium">Status</th>
+                <th className="px-4 py-3 font-medium">Client Note</th>
+                <th className="px-4 py-3 font-medium">Items</th>
+                <th className="px-4 py-3 font-medium">Total (AED)</th>
+                <th className="px-4 py-3 font-medium">Order</th>
+                <th className="px-4 py-3 font-medium text-center">Actions</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-gray-100">
               {quotes.map((quote) => (
-                <tr key={quote._id} className="border-t hover:bg-gray-50">
-                  <td className="px-4 py-2">
+                <tr
+                  key={quote._id}
+                  className="hover:bg-gray-200 transition-colors duration-150"
+                >
+                  <td className="px-4 py-3">
                     {new Date(quote.createdAt).toLocaleDateString()}
                   </td>
-                  <td className="px-4 py-2">{quote.user?.name || "N/A"}</td>
-                  <td className="px-4 py-2">
+                  <td className="px-4 py-3">{quote.user?.name || "N/A"}</td>
+                  <td className="px-4 py-3">
                     <span
-                      className={`text-xs font-medium rounded-md px-2 ${
-                        quote.status === "Confirmed"
-                          ? "bg-green-200 text-green-800"
-                          : quote.status === "Rejected"
-                          ? "bg-red-100 text-red-900"
-                          : quote.status === "Requested"
-                          ? "bg-yellow-100 text-yellow-900"
-                          : quote.status === "Quoted"
-                          ? "bg-purple-200 text-purple-700"
-                          : "bg-gray-200 text-gray-600"
-                      }`}
+                      className={`px-2 py-1 rounded text-xs font-semibold
+                        ${
+                          quote.status === "Confirmed"
+                            ? "bg-green-100 text-green-700"
+                            : quote.status === "Rejected"
+                            ? "bg-red-100 text-red-700"
+                            : quote.status === "Requested"
+                            ? "bg-yellow-100 text-yellow-800"
+                            : quote.status === "Quoted"
+                            ? "bg-purple-100 text-purple-700"
+                            : "bg-gray-100 text-gray-600"
+                        }`}
                     >
                       {quote.status}
                     </span>
                   </td>
-
                   <td
-                    className="px-4 py-2 max-w-xs truncate"
+                    className="px-4 py-3 max-w-xs truncate"
                     title={quote.clientToAdminNote}
                   >
                     {quote.clientToAdminNote || "-"}
                   </td>
-                  <td className="px-4 py-2">{quote.requestedItems.length}</td>
-                  <td className="px-4 py-2">{quote.totalPrice.toFixed(2)}</td>
-                  <td className="px-4 py-2">
+                  <td className="px-4 py-3">{quote.requestedItems.length}</td>
+                  <td className="px-4 py-3">
+                    {(quote.totalPrice || 0).toFixed(2)}
+                  </td>
+                  <td className="px-4 py-3">
                     {quote.isOrderCreated ? (
-                      <span className="text-green-700 font-medium">
-                        Created 
+                      <span className="text-green-700 text-sm font-medium">
+                        Created
                       </span>
                     ) : (
                       <button
                         onClick={() => handleCreateOrder(quote._id)}
                         disabled={isCreating}
-                        className="text-white text-xs bg-purple-600 hover:bg-purple-700 px-3 py-1 rounded disabled:opacity-50"
+                        className="cursor-pointer text-xs text-white bg-purple-600 hover:bg-purple-700 px-3 py-1 rounded disabled:opacity-50"
                       >
                         {isCreating ? "Creating..." : "Create"}
                       </button>
                     )}
                   </td>
-                  <td className="py-2">
-                    <div className="flex space-x-1 ">
+                  <td className="px-4 py-3 text-center">
+                    <div className="flex justify-center items-end space-x-1">
                       <Link to={`/admin/quotes/${quote._id}/edit`}>
                         <button
                           title="Edit Quote"
-                          className="text-blue-600 p-2 hover:text-blue-800 cursor-pointer"
+                          className="p-2 text-blue-600 hover:text-blue-800 cursor-pointer"
                         >
                           <FaEdit />
                         </button>
                       </Link>
-
                       <button
                         title="Delete Quote"
                         onClick={() => handleDelete(quote._id)}
-                        className="text-red-600 p-2 hover:text-red-800 cursor-pointer"
+                        className="p-2 text-red-600 hover:text-red-800 cursor-pointer"
                       >
                         <FaTrash />
                       </button>
-
                       <button
-                        title="Share Quote"
+                        title="Open Quote PDF"
                         onClick={() => handleShare(quote._id)}
-                        className="text-purple-600 p-2 hover:text-purple-800 cursor-pointer"
+                        className="p-2 text-purple-600 hover:text-purple-800 hover:bg-purple-100 cursor-pointer"
                       >
                         <FaShareAlt />
                       </button>

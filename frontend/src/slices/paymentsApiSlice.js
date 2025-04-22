@@ -53,11 +53,17 @@ addPaymentFromInvoice: builder.mutation({
       }),
       invalidatesTags: ["Payment"],
     }),
+
+    getPaymentsByInvoice: builder.query({
+      query: (invoiceId) => `/api/payments?invoice=${invoiceId}`,
+    }),
+    
   }),
 });
 
 export const {
   useGetPaymentsQuery,
+  useGetPaymentsByInvoiceQuery,
   useGetPaymentByIdQuery,
   useGetMyPaymentsQuery, // ✅ NEW HOOK
   useAddPaymentFromInvoiceMutation,

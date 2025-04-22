@@ -1,5 +1,65 @@
 import asyncHandler from "../middleware/asyncHandler.js";
 import Quote from "../models/quoteModel.js";
+import sendEmail from "../utils/sendEmail.js";
+import buildQuoteEmail from "../utils/quoteRequestEmail.js";
+import fs from "fs/promises";
+import puppeteer from "puppeteer";
+
+// @desc    Generate PDF version of a quote using Puppeteer and Tailwind template
+// @route   GET /api/quotes/:id/pdf
+// @access  Private/Admin
+export const getQuotePDF = asyncHandler(async (req, res) => {
+  const quote = await Quote.findById(req.params.id)
+    .populate("user", "name email")
+    .populate("requestedItems.product", "name");
+
+  if (!quote) throw new Error("Quote not found");
+
+  const template = await fs.readFile("backend/templates/quote.html", "utf8");
+
+  const itemsHtml = quote.requestedItems
+    .map(
+      (item) =>
+        `<tr>
+          <td class="border p-2">${item.product?.name || "Unnamed Item"}</td>
+          <td class="border p-2 text-right">${item.qty}</td>
+          <td class="border p-2 text-right">${(item.qty * item.unitPrice).toFixed(2)}</td>
+        </tr>`
+    )
+    .join("");
+
+  const filledHtml = template
+    .replace("{{quoteDate}}", new Date(quote.createdAt).toLocaleDateString())
+    .replace("{{status}}", quote.status)
+    .replace("{{userName}}", quote.user?.name || "Client")
+    .replace("{{userEmail}}", quote.user?.email || "—")
+    .replace("{{deliveryCharge}}", quote.deliveryCharge.toFixed(2))
+    .replace("{{extraFee}}", quote.extraFee.toFixed(2))
+    .replace("{{totalPrice}}", quote.totalPrice.toFixed(2))
+    .replace("{{items}}", itemsHtml);
+
+  const browser = await puppeteer.launch({ headless: true });
+  const page = await browser.newPage();
+
+  await page.setRequestInterception(true);
+  page.on("request", (req) => {
+    if (["image", "stylesheet", "font"].includes(req.resourceType())) {
+      req.abort();
+    } else {
+      req.continue();
+    }
+  });
+
+  await page.setContent(filledHtml, { waitUntil: "networkidle0" });
+
+  const pdfBuffer = await page.pdf({ format: "A4", printBackground: true });
+  await browser.close();
+
+  res.setHeader("Content-Type", "application/pdf");
+  res.setHeader("Content-Disposition", `inline; filename=quote-${quote._id}.pdf`);
+  res.end(pdfBuffer);
+});
+
 
 // @desc    Get logged-in user's own quotes
 // @route   GET /api/quotes/my
@@ -30,8 +90,6 @@ export const getMyQuotes = asyncHandler(async (req, res) => {
   res.json(sanitizedQuotes);
 });
 
-
-
 // @desc    Create a new quote (Client)
 // @route   POST /api/quotes
 // @access  Private
@@ -50,8 +108,22 @@ export const createQuote = asyncHandler(async (req, res) => {
     totalPrice: 0,
   });
 
+  console.log("✅ Quote created with ID:", quote._id);
+
+  // populate product names for email
+  const populatedQuote = await quote.populate("requestedItems.product", "name");
+
+  try {
+    await sendEmail({
+      to: ["azadkkurdi@gmail.com", "almomani95hu@gmail.com"],
+      subject: "New Quote Request Received",
+      html: buildQuoteEmail({ user: req.user, quote: populatedQuote })
+    });
+  } catch (error) {
+  }
   res.status(201).json(quote);
 });
+
 
 // @desc    Get all quotes (Admin only) sorted from latest to oldest
 // @route   GET /api/quotes/admin
@@ -64,7 +136,6 @@ export const getQuotes = asyncHandler(async (req, res) => {
 
   res.json(quotes);
 });
-
 
 // @desc    Get single quote by ID
 // @route   GET /api/quotes/:id
@@ -105,8 +176,6 @@ export const updateQuote = asyncHandler(async (req, res) => {
   const updated = await quote.save();
   res.json(updated);
 });
-
-
 
 // @desc    Delete quote (Admin)
 // @route   DELETE /api/quotes/:id

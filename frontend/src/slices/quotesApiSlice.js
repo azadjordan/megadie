@@ -3,6 +3,7 @@ import { apiSlice } from "./apiSlice";
 
 export const quotesApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
+    
     // ✅ Get all quotes (admin)
     getQuotes: builder.query({
       query: () => `${QUOTES_URL}/admin`,

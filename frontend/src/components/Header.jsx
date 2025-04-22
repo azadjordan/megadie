@@ -38,7 +38,7 @@ const Header = () => {
       {/* ✅ Fixed Main Header */}
       <header className="sticky top-0 z-50 bg-white shadow-md">
       <nav className="container mx-auto flex justify-between items-center py-4 px-6">
-          <Link to="/" className="text-3xl font-bold text-purple-500 hover:text-purple-600 transition">
+          <Link to="/" className="text-3xl font-extrabold text-purple-500 hover:text-purple-600 transition">
             Megadie.com
           </Link>
 

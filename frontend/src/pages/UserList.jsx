@@ -6,8 +6,8 @@ const UserList = () => {
   const { data: users = [], isLoading, error, refetch } = useGetUsersQuery();
 
   return (
-    <div className="p-6 max-w-screen-xl mx-auto">
-      <h2 className="text-2xl font-semibold text-purple-700 mb-6">All Users</h2>
+    <div className="p-6 w-full">
+      <h2 className="text-2xl font-semibold text-purple-700 mb-4">All Users</h2>
 
       {isLoading ? (
         <p className="text-gray-500">Loading users...</p>
@@ -16,41 +16,56 @@ const UserList = () => {
       ) : users.length === 0 ? (
         <p className="text-gray-600">No users found.</p>
       ) : (
-        <div className="overflow-x-auto border rounded">
-          <table className="min-w-full text-sm text-left">
-            <thead className="bg-gray-100 text-gray-700">
-              <tr>
-                <th className="px-4 py-2">Name</th>
-                <th className="px-4 py-2">Email</th>
-                <th className="px-4 py-2">Phone</th>
-                <th className="px-4 py-2">Address</th>
-                <th className="px-4 py-2">Admin</th>
-                <th className="px-4 py-2">Actions</th>
+        <div className="overflow-x-auto rounded border border-gray-200">
+          <table className="min-w-full text-sm">
+            <thead className="bg-gray-50 text-gray-700 text-left">
+              <tr className="border-b border-gray-200">
+                <th className="px-4 py-3 font-medium">Name</th>
+                <th className="px-4 py-3 font-medium">Email</th>
+                <th className="px-4 py-3 font-medium">Phone</th>
+                <th className="px-4 py-3 font-medium">Address</th>
+                <th className="px-4 py-3 font-medium">Role</th>
+                <th className="px-4 py-3 font-medium text-center">Actions</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-gray-100">
               {users.map((user) => (
-                <tr key={user._id} className="border-t hover:bg-gray-50">
-                  <td className="px-4 py-2">{user.name}</td>
-                  <td className="px-4 py-2">{user.email}</td>
-                  <td className="px-4 py-2">{user.phoneNumber}</td>
-                  <td className="px-4 py-2">{user.address}</td>
-                  <td className="px-4 py-2">
+                <tr
+                  key={user._id}
+                  className="hover:bg-gray-200 transition-colors duration-150"
+                >
+                  <td className="px-4 py-3">{user.name}</td>
+                  <td className="px-4 py-3">{user.email}</td>
+                  <td className="px-4 py-3">{user.phoneNumber || "-"}</td>
+                  <td className="px-4 py-3">{user.address || "-"}</td>
+                  <td className="px-4 py-3">
                     {user.isAdmin ? (
-                      <FaUserShield className="text-green-600" title="Admin" />
+                      <span className="flex items-center gap-1 text-green-700 text-sm font-medium">
+                        <FaUserShield /> Admin
+                      </span>
                     ) : (
-                      <FaUser className="text-gray-500" title="User" />
+                      <span className="flex items-center gap-1 text-gray-600 text-sm">
+                        <FaUser /> User
+                      </span>
                     )}
                   </td>
-                  <td className="px-4 py-2 space-x-2">
-                    <Link to={`/admin/users/${user._id}/edit`}>
-                      <button className="text-purple-600 hover:text-purple-800" title="Edit">
-                        <FaEdit />
+                  <td className="px-4 py-3 text-center">
+                    <div className="flex justify-center items-end space-x-1">
+                      <Link to={`/admin/users/${user._id}/edit`}>
+                        <button
+                          className="p-2 text-purple-600 hover:text-purple-800 cursor-pointer"
+                          title="Edit"
+                        >
+                          <FaEdit />
+                        </button>
+                      </Link>
+                      <button
+                        className="p-2 text-red-600 hover:text-red-800 cursor-pointer"
+                        title="Delete"
+                      >
+                        <FaTrash />
                       </button>
-                    </Link>
-                    <button className="text-red-600 hover:text-red-800" title="Delete">
-                      <FaTrash />
-                    </button>
+                    </div>
                   </td>
                 </tr>
               ))}

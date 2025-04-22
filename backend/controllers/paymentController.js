@@ -2,69 +2,87 @@ import asyncHandler from "../middleware/asyncHandler.js";
 import Payment from "../models/paymentModel.js";
 import Invoice from "../models/invoiceModel.js";
 
-// @desc    Add payment to invoice and update invoice status
-// @route   POST /api/payments/from-invoice/:invoiceId
-// @access  Private/Admin
+// @desc Get all payments for a specific invoice
+// @route GET /api/payments?invoice=invoiceId
+// @access Private/Admin
+const getPaymentsByInvoice = asyncHandler(async (req, res) => {
+  const { invoice } = req.query;
+  if (!invoice) {
+    res.status(400);
+    throw new Error("Invoice ID is required.");
+  }
+
+  const payments = await Payment.find({ invoice }).sort({ paymentDate: 1 });
+  res.json(payments);
+});
+
+
+// @desc Add payment to invoice and update status based on math
+// @route POST /api/payments/from-invoice/:invoiceId
+// @access Private/Admin
 const addPaymentToInvoice = asyncHandler(async (req, res) => {
-    const { amount, paymentMethod, note, paymentDate } = req.body;
-    const { invoiceId } = req.params;
-  
-    const invoice = await Invoice.findById(invoiceId);
-    if (!invoice) {
-      res.status(404);
-      throw new Error("Invoice not found");
-    }
-  
-    if (invoice.status === "Paid") {
-      res.status(400);
-      throw new Error("Invoice is already fully paid.");
-    }
-  
-    const remainingDue = invoice.amountDue - invoice.amountPaid;
-  
-    if (amount <= 0) {
-      res.status(400);
-      throw new Error("Payment amount must be greater than zero.");
-    }
-  
-    if (amount > remainingDue) {
-      res.status(400);
-      throw new Error(
-        `Payment amount exceeds remaining balance. Remaining due: ${remainingDue.toFixed(2)}`
-      );
-    }
-  
-    // Create new payment
-    const payment = new Payment({
-      invoice: invoice._id,
-      user: invoice.user,
-      amount,
-      paymentMethod,
-      note,
-      paymentDate: paymentDate || Date.now(),
-    });
-  
-    await payment.save();
-  
-    // Update invoice
-    invoice.amountPaid += amount;
-  
-    if (invoice.amountPaid >= invoice.amountDue) {
-      invoice.status = "Paid";
-      invoice.paidAt = new Date();
-    } else {
-      invoice.status = "Partially Paid";
-    }
-  
-    await invoice.save();
-  
-    res.status(201).json({
-      message: "✅ Payment added and invoice updated.",
-      invoice,
-      payment,
-      remainingDue: invoice.amountDue - invoice.amountPaid,
-    });
+  const { amount, paymentMethod, note, paymentDate } = req.body;
+  const { invoiceId } = req.params;
+
+  const invoice = await Invoice.findById(invoiceId);
+  if (!invoice) {
+    res.status(404);
+    throw new Error("Invoice not found");
+  }
+
+  const remainingDue = invoice.amountDue - invoice.amountPaid;
+
+  if (amount <= 0) {
+    res.status(400);
+    throw new Error("Payment amount must be greater than zero.");
+  }
+
+  if (amount > remainingDue) {
+    res.status(400);
+    throw new Error(
+      `Payment amount exceeds remaining balance. Remaining due: ${remainingDue.toFixed(2)}`
+    );
+  }
+
+  const payment = new Payment({
+    invoice: invoice._id,
+    user: invoice.user,
+    amount,
+    paymentMethod,
+    note,
+    paymentDate: paymentDate || Date.now(),
   });
+
+  await payment.save();
+
+  // ✅ Link this payment to the invoice
+  invoice.payments.push(payment._id);
+
+  // ✅ Simple addition
+  invoice.amountPaid += amount;
+
+  // ✅ Update status and paidAt
+  if (invoice.amountPaid >= invoice.amountDue) {
+    invoice.status = "Paid";
+    invoice.paidAt = new Date();
+  } else if (invoice.amountPaid > 0) {
+    invoice.status = "Partially Paid";
+    invoice.paidAt = null;
+  } else {
+    invoice.status = "Unpaid";
+    invoice.paidAt = null;
+  }
+
+  await invoice.save();
+
+  res.status(201).json({
+    message: "✅ Payment added and invoice updated.",
+    invoice,
+    payment,
+    remainingDue: invoice.amountDue - invoice.amountPaid,
+  });
+});
+
 
 // @desc    Get all payments (Admin)
 // @route   GET /api/payments
@@ -107,8 +125,6 @@ const getMyPayments = asyncHandler(async (req, res) => {
     res.json(payments);
   });
   
-
-
 // @desc    Update a payment by ID (Admin only)
 // @route   PUT /api/payments/:id
 // @access  Private/Admin
@@ -154,4 +170,5 @@ export {
   deletePayment,
     addPaymentToInvoice,
     getMyPayments,
+  getPaymentsByInvoice,
 };

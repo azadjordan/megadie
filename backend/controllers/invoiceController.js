@@ -2,154 +2,71 @@
 import asyncHandler from "../middleware/asyncHandler.js";
 import Invoice from "../models/invoiceModel.js";
 import Order from "../models/orderModel.js";
-import PDFDocument from "pdfkit";
+import fs from "fs/promises";
+import puppeteer from "puppeteer";
+import Payment from "../models/paymentModel.js"; // ✅ Make sure this is imported
 
-// @desc Generate a clean and balanced PDF invoice layout
+
+// @desc Generate PDF invoice using Puppeteer and Tailwind template
 // @route GET /api/invoices/:id/pdf
 // @access Private/Admin
 export const getInvoicePDF = asyncHandler(async (req, res) => {
-    const invoice = await Invoice.findById(req.params.id)
-      .populate("user", "name email")
-      .populate("order");
-  
-    if (!invoice) throw new Error("Invoice not found");
-  
-    const order = await Order.findById(invoice.order._id)
-      .populate("orderItems.product", "name code size");
-  
-    if (!order) throw new Error("Order not found");
-  
-    const doc = new PDFDocument({ margin: 50, size: 'A4' });
-    res.setHeader("Content-Type", "application/pdf");
-    doc.pipe(res);
-  
-    const leftX = 50;
-    const rightX = 320;
-    const sectionWidth = 450;
-    const gray = "#F4F4F4";
-  
-    // === Header: Logo + Title
-    doc
-      .fontSize(26)
-      .fillColor("#6B21A8")
-      .font("Helvetica-Bold")
-      .text("Megadie", leftX, 50)
-      .fillColor("black");
-  
-    doc
-      .fontSize(14)
-      .text("INVOICE", leftX, 90)
-      .moveDown(1.5);
-  
-    // === Invoice Info Block
-    const infoBoxY = doc.y;
-    doc
-      .rect(leftX, infoBoxY - 10, sectionWidth, 90)
-      .fill(gray)
-      .fillColor("black");
-  
-    const infoY = infoBoxY;
-    doc
-      .fontSize(11)
-      .font("Helvetica-Bold")
-      .text("Invoice #:", leftX + 10, infoY + 5)
-      .text("Invoice Date:", leftX + 10, infoY + 20)
-      .text("Due Date:", leftX + 10, infoY + 35)
-      .text("Status:", leftX + 10, infoY + 50);
-  
-    doc
-      .font("Helvetica")
-      .text(invoice.invoiceNumber, leftX + 110, infoY + 5)
-      .text(new Date(invoice.createdAt).toLocaleDateString(), leftX + 110, infoY + 20)
-      .text(invoice.dueDate ? new Date(invoice.dueDate).toLocaleDateString() : "-", leftX + 110, infoY + 35)
-      .text(invoice.status, leftX + 110, infoY + 50);
-  
-    doc
-      .font("Helvetica-Bold")
-      .text("Billed To:", rightX + 10, infoY + 5)
-      .font("Helvetica")
-      .text(invoice.user.name, rightX + 10, infoY + 20)
-      .text(invoice.user.email, rightX + 10, infoY + 35);
-  
-    doc.moveDown(6);
-  
-    // === Order Summary
-    doc
-      .fontSize(12)
-      .font("Helvetica-Bold")
-      .text("Order Summary", leftX)
-      .moveDown(0.5);
-  
-    const tableTop = doc.y;
-    const itemX = leftX;
-    const qtyX = leftX + 350;
-  
-    doc
-      .font("Helvetica-Bold")
-      .fontSize(11)
-      .text("Item", itemX, tableTop)
-      .text("Qty", qtyX, tableTop);
-  
-    doc.moveTo(itemX, tableTop + 15).lineTo(itemX + sectionWidth, tableTop + 15).stroke();
-  
-    // === Item Rows (Zebra striping)
-    let rowY = tableTop + 25;
-    doc.font("Helvetica").fontSize(10);
-  
-    order.orderItems.forEach((item, i) => {
-      if (i % 2 === 0) {
-        doc.rect(itemX, rowY - 3, sectionWidth, 20).fill(gray).fillColor("black");
-      }
-      doc.text(item.product?.name || "N/A", itemX + 5, rowY).text(item.qty.toString(), qtyX, rowY);
-      rowY += 20;
-    });
-  
-    // === Totals Block
-    rowY += 20;
-    doc
-      .rect(itemX, rowY, sectionWidth, 60)
-      .fill(gray)
-      .fillColor("black");
-  
-    const totalsY = rowY + 10;
-    doc
-      .font("Helvetica-Bold")
-      .fontSize(11)
-      .text("Order Total:", itemX + 20, totalsY)
-      .text("Amount Due:", itemX + 20, totalsY + 15)
-      .text("Amount Paid:", itemX + 20, totalsY + 30);
-  
-    doc
-      .font("Helvetica")
-      .text(`AED ${invoice.originalOrderTotal.toFixed(2)}`, qtyX, totalsY)
-      .text(`AED ${invoice.amountDue.toFixed(2)}`, qtyX, totalsY + 15)
-      .text(`AED ${invoice.amountPaid.toFixed(2)}`, qtyX, totalsY + 30);
-  
-    // === Footer (Flat at the bottom, full width, no thank-you message)
-    doc
-      .fontSize(10)
-      .fillColor("#444")
-      .font("Helvetica")
-      .text("\n\n\n", { align: "center" }); // push content down slightly
-  
-    const pageHeight = doc.page.height;
-    const footerTextY = pageHeight - 80;
-  
-    doc
-      .fontSize(10)
-      .fillColor("#444")
-      .text("Megadie Trading LLC · Abu Dhabi, UAE", leftX, footerTextY, {
-        width: doc.page.width - 2 * leftX,
-        align: "center"
-      })
-      .text("TRN: 123456789 · Email: hello@megadie.com · +971 50 123 4567", {
-        width: doc.page.width - 2 * leftX,
-        align: "center"
-      });
-  
-    doc.end();
+  const invoice = await Invoice.findById(req.params.id)
+    .populate("user", "name email")
+    .populate("order");
+
+  if (!invoice) throw new Error("Invoice not found");
+
+  const order = await Order.findById(invoice.order._id)
+    .populate("orderItems.product", "name");
+
+  if (!order) throw new Error("Order not found");
+
+  const template = await fs.readFile("backend/templates/invoice.html", "utf8");
+
+  const itemsHtml = order.orderItems
+    .map(
+      (item) =>
+        `<tr>
+          <td class="border p-2">${item.product?.name || "Unnamed Item"}</td>
+          <td class="border p-2 text-right">${item.qty}</td>
+        </tr>`
+    )
+    .join("");
+
+  const filledHtml = template
+    .replace("{{invoiceNumber}}", invoice.invoiceNumber || "N/A")
+    .replace("{{invoiceDate}}", new Date(invoice.createdAt).toLocaleDateString())
+    .replace("{{status}}", invoice.status || "Pending")
+    .replace("{{userName}}", invoice.user?.name || "Client")
+    .replace("{{userEmail}}", invoice.user?.email || "—")
+    .replace("{{amountDue}}", (invoice.amountDue || 0).toFixed(2))
+    .replace("{{amountPaid}}", (invoice.amountPaid || 0).toFixed(2))
+    .replace("{{items}}", itemsHtml);
+
+  const browser = await puppeteer.launch({ headless: true });
+  const page = await browser.newPage();
+
+  await page.setRequestInterception(true);
+  page.on("request", (req) => {
+    if (["image", "stylesheet", "font"].includes(req.resourceType())) {
+      req.abort();
+    } else {
+      req.continue();
+    }
   });
-  
+
+  await page.setContent(filledHtml, { waitUntil: "networkidle0" });
+
+  const pdfBuffer = await page.pdf({ format: "A4", printBackground: true });
+  await browser.close();
+
+  res.setHeader("Content-Type", "application/pdf");
+  res.setHeader("Content-Disposition", `inline; filename=invoice-${invoice.invoiceNumber}.pdf`);
+  res.end(pdfBuffer);
+});
+
+
 // @desc    Get all invoices (Admin only)
 // @route   GET /api/invoices
 // @access  Private/Admin
@@ -157,6 +74,7 @@ export const getInvoices = asyncHandler(async (req, res) => {
   const invoices = await Invoice.find({})
     .populate("user", "name email")
     .populate("order", "orderNumber totalPrice")
+    .populate("payments")
     .sort({ createdAt: -1 });
 
   res.json(invoices);
@@ -168,7 +86,8 @@ export const getInvoices = asyncHandler(async (req, res) => {
 export const getInvoiceById = asyncHandler(async (req, res) => {
   const invoice = await Invoice.findById(req.params.id)
     .populate("user", "name email")
-    .populate("order", "orderNumber totalPrice");
+    .populate("order", "orderNumber totalPrice")
+    .populate("payments");
 
   if (invoice) {
     if (req.user.isAdmin || req.user._id.equals(invoice.user._id)) {
@@ -182,6 +101,7 @@ export const getInvoiceById = asyncHandler(async (req, res) => {
     throw new Error("Invoice not found.");
   }
 });
+
 
 // @desc    Create invoice manually (Admin only)
 // @route   POST /api/invoices
@@ -212,10 +132,10 @@ export const createInvoice = asyncHandler(async (req, res) => {
       order,
       user,
       amountDue,
-      originalOrderTotal: orderDoc.totalPrice, // ✅ store snapshot of original total
-      dueDate,
+      dueDate: dueDate || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // ✅ default 30 days
       adminNote,
     });
+    
   
     await Order.findByIdAndUpdate(order, { invoiceGenerated: true });
   
@@ -250,9 +170,15 @@ export const deleteInvoice = asyncHandler(async (req, res) => {
     throw new Error("Invoice not found.");
   }
 
+  // ✅ Delete all payments linked to this invoice
+  await Payment.deleteMany({ invoice: invoice._id });
+
+  // ✅ Delete the invoice itself
   await invoice.deleteOne();
+
   res.status(204).end();
 });
+
 
 // @desc    Get logged-in user's invoices
 // @route   GET /api/invoices/my
@@ -260,7 +186,9 @@ export const deleteInvoice = asyncHandler(async (req, res) => {
 export const getMyInvoices = asyncHandler(async (req, res) => {
   const invoices = await Invoice.find({ user: req.user._id })
     .populate("order", "orderNumber totalPrice")
+    .populate("payments")
     .sort({ createdAt: -1 });
 
   res.json(invoices);
 });
+

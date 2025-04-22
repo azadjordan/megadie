@@ -105,7 +105,7 @@ const createOrderFromQuote = asyncHandler(async (req, res) => {
   res.status(201).json(createdOrder);
 });
 
-// @desc    Update order fields: status, user, and notes
+// @desc    Update all editable fields of an order (Admin)
 // @route   PUT /api/orders/:id
 // @access  Private/Admin
 const updateOrder = asyncHandler(async (req, res) => {
@@ -116,25 +116,54 @@ const updateOrder = asyncHandler(async (req, res) => {
     throw new Error("Order not found.");
   }
 
-  const { status, user, clientToAdminNote, adminToClientNote, adminToAdminNote } = req.body;
-
-  if (status) {
-    order.status = status;
-    if (status === "Delivered") {
-      order.isDelivered = true;
-      order.deliveredAt = new Date();
-    }
-  }
+  const {
+    user,
+    status,
+    shippingAddress,
+    totalPrice,
+    deliveryCharge,
+    extraFee,
+    deliveredBy,
+    deliveredAt,
+    clientToAdminNote,
+    adminToAdminNote,
+    adminToClientNote,
+    stockUpdated,
+    invoiceGenerated,
+  } = req.body;
 
   if (user) order.user = user;
+  if (status) order.status = status;
+
+  // Automatically link isDelivered to status
+  if (status === "Delivered") {
+    order.isDelivered = true;
+    if (!order.deliveredAt) {
+      order.deliveredAt = new Date();
+    }
+  } else {
+    order.isDelivered = false;
+    order.deliveredAt = undefined;
+  }
+
+  if (deliveredBy !== undefined) order.deliveredBy = deliveredBy;
+  if (deliveredAt !== undefined) order.deliveredAt = deliveredAt; // Optional manual override if needed
+
+  if (shippingAddress !== undefined) order.shippingAddress = shippingAddress;
+  if (totalPrice !== undefined) order.totalPrice = totalPrice;
+  if (deliveryCharge !== undefined) order.deliveryCharge = deliveryCharge;
+  if (extraFee !== undefined) order.extraFee = extraFee;
+
   if (clientToAdminNote !== undefined) order.clientToAdminNote = clientToAdminNote;
-  if (adminToClientNote !== undefined) order.adminToClientNote = adminToClientNote;
   if (adminToAdminNote !== undefined) order.adminToAdminNote = adminToAdminNote;
+  if (adminToClientNote !== undefined) order.adminToClientNote = adminToClientNote;
+
+  if (stockUpdated !== undefined) order.stockUpdated = stockUpdated;
+  if (invoiceGenerated !== undefined) order.invoiceGenerated = invoiceGenerated;
 
   const updated = await order.save();
   res.json(updated);
 });
-
 
 
 export { getOrders, createOrderFromQuote, getMyOrders, getOrderById, deleteOrder, updateOrder };

@@ -6,6 +6,7 @@ import {
   updateQuote,
   deleteQuote,
   getMyQuotes,
+  getQuotePDF, // ✅ Add this import
 } from "../controllers/quoteController.js";
 import { protect, admin } from "../middleware/authMiddleware.js";
 
@@ -15,7 +16,10 @@ const router = express.Router();
 router.route("/").post(protect, createQuote);
 
 // ✅ Get current user's own quotes (client)
-router.get("/my", protect, getMyQuotes); // 👈 this MUST come before "/:id"
+router.get("/my", protect, getMyQuotes);
+
+// ✅ Generate PDF version of a quote (admin only)
+router.get("/:id/pdf", protect, admin, getQuotePDF); // ✅ New route
 
 // ✅ Get all quotes (admin only)
 router.route("/admin").get(protect, admin, getQuotes);

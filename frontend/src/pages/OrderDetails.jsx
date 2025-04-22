@@ -12,15 +12,6 @@ const OrderDetails = () => {
 
   return (
     <div className="p-6 w-full">
-      <div className="flex items-center space-x-3 mb-4">
-        <Link
-          to="/admin/orders"
-          className="text-purple-600 hover:text-purple-800 text-sm flex items-center"
-        >
-          <FaArrowLeft className="mr-1" /> Back to Order List
-        </Link>
-      </div>
-
       {isLoading ? (
         <p className="text-gray-500">Loading order details...</p>
       ) : error ? (
