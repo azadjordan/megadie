@@ -1,17 +1,22 @@
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import {
   useGetQuoteByIdQuery,
   useUpdateQuoteMutation,
 } from "../slices/quotesApiSlice";
+import { useGetUsersQuery } from "../slices/usersApiSlice"; // ✅ Import users query
 import Message from "../components/Message";
+import { toast } from "react-toastify";
 
 const QuoteUpdate = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const { data: quote, isLoading, error } = useGetQuoteByIdQuery(id);
+  const { data: users = [] } = useGetUsersQuery(); // ✅ Fetch users
   const [updateQuote, { isLoading: isUpdating }] = useUpdateQuoteMutation();
 
   const [form, setForm] = useState({
+    user: "",
     status: "",
     deliveryCharge: 0,
     extraFee: 0,
@@ -24,6 +29,7 @@ const QuoteUpdate = () => {
   useEffect(() => {
     if (quote) {
       setForm({
+        user: quote.user?._id || "", // ✅ Set initial user ID
         status: quote.status || "",
         deliveryCharge: quote.deliveryCharge || 0,
         extraFee: quote.extraFee || 0,
@@ -93,10 +99,11 @@ const QuoteUpdate = () => {
     e.preventDefault();
     try {
       await updateQuote({ id, ...form }).unwrap();
-      alert("Quote updated successfully!");
+      toast.success("Quote updated successfully!");
+      navigate("/admin/quotes", { state: { refetch: true } });
     } catch (err) {
       console.error(err);
-      alert("Failed to update quote.");
+      toast.error("Failed to update quote.");
     }
   };
 
@@ -110,10 +117,25 @@ const QuoteUpdate = () => {
         Update Quote
       </h2>
 
-      <p className="text-sm text-gray-600 mb-2">
-        <strong>User:</strong> {quote.user?.name} ({quote.user?.email})
-      </p>
+      {/* 🔹 Select User */}
+      <div className="mb-6">
+        <label className="block text-sm font-medium text-gray-700">User</label>
+        <select
+          name="user"
+          value={form.user}
+          onChange={handleChange}
+          className="w-full border rounded px-3 py-2 text-sm"
+        >
+          <option value="">Select user</option>
+          {users.map((u) => (
+            <option key={u._id} value={u._id}>
+              {u.name}
+            </option>
+          ))}
+        </select>
+      </div>
 
+      {/* 🔹 Order Created / Order ID */}
       <div className="mb-6 text-sm text-gray-700 space-y-1">
         <div>
           <strong>Order Created:</strong>{" "}

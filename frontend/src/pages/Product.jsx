@@ -12,27 +12,37 @@ const Product = () => {
   const dispatch = useDispatch();
   const { data: product, error, isLoading } = useGetProductByIdQuery(id);
 
-  const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState("");
   const [isAdded, setIsAdded] = useState(false);
+
+  const [quantity, setQuantity] = useState(null); // ✅ Start with null
 
   useEffect(() => {
     if (product?.images?.length > 0) {
       setSelectedImage(product.images[0]);
     }
-  }, [product]);
+
+    if (product?.moq && quantity === null) {
+      setQuantity(product.moq); // ✅ Set initial value to MOQ
+    }
+  }, [product, quantity]);
+
+  const moq = product?.moq || 1;
+  const isUnderMOQ = quantity < moq;
 
   const handleAddToCart = () => {
-    if (product && product.isAvailable && quantity > 0) {
+    if (product && product.isAvailable && quantity >= moq) {
       dispatch(addToCart({ ...product, quantity }));
-      setQuantity(product.moq || 1);
+      setQuantity(moq);
       setIsAdded(true);
       setTimeout(() => setIsAdded(false), 800);
     }
   };
 
   if (isLoading)
-    return <p className="text-center py-10 text-gray-500">Loading product...</p>;
+    return (
+      <p className="text-center py-10 text-gray-500">Loading product...</p>
+    );
   if (error)
     return (
       <Message type="error">
@@ -95,7 +105,7 @@ const Product = () => {
             <h1 className="text-3xl font-bold text-gray-900">{product.name}</h1>
             <p className="text-sm text-gray-500">
               <span className="font-medium text-gray-700">Category:</span>{" "}
-              {product.category?.name || "N/A"}
+              {product.category?.displayName || "N/A"}
             </p>
 
             <div className="flex flex-wrap items-center gap-3 mt-2">
@@ -108,17 +118,27 @@ const Product = () => {
                   Currently Unavailable
                 </span>
               )}
-              <span className="inline-block text-xs font-semibold text-yellow-800 bg-yellow-50 border border-yellow-200 px-3 py-1 rounded-full">
-                MOQ: {product.moq}
+
+              {/* ✅ MOQ badge with conditional styling */}
+              <span
+                className={`inline-block text-xs font-semibold px-3 py-1 rounded-full transition-colors duration-200 ${
+                  isUnderMOQ
+                    ? "text-red-700 bg-red-100 border border-red-300"
+                    : "text-yellow-800 bg-yellow-50 border border-yellow-200"
+                }`}
+              >
+                {isUnderMOQ ? `Minimum must be ${moq} pcs` : `MOQ: ${moq}`}
               </span>
             </div>
           </div>
 
           {product.displaySpecs && (
             <div className="pt-4 border-t border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-800 mb-2 mt-4">Key Features</h3>
+              <h3 className="text-lg font-semibold text-gray-800 mb-2 mt-4">
+                Key Features
+              </h3>
               <ul className="list-disc list-inside text-sm text-gray-700 space-y-1">
-                {product.displaySpecs.split("\n").map((line, idx) => (
+                {product.displaySpecs.split(",").map((line, idx) => (
                   <li key={idx}>{line}</li>
                 ))}
               </ul>
@@ -127,44 +147,51 @@ const Product = () => {
 
           {product.description && (
             <div className="pt-4 border-t border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-800 mb-2 mt-4">Description</h3>
+              <h3 className="text-lg font-semibold text-gray-800 mb-2 mt-4">
+                Description
+              </h3>
               <p className="text-sm text-gray-600 leading-relaxed">
                 {product.description}
               </p>
             </div>
           )}
 
+          {/* ✅ Quantity & Add to Cart Section */}
           <div className="pt-4 border-t border-gray-200">
-          <div className="flex flex-row gap-4 items-stretch mt-4">
-  <div className="flex-1 sm:flex-none">
-    <QuantityControl quantity={quantity} setQuantity={setQuantity} />
-  </div>
-  <button
-    onClick={handleAddToCart}
-    disabled={!product.isAvailable || isAdded}
-    className={`px-6 text-md font-semibold rounded-md transition ${
-      !product.isAvailable
-        ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-        : isAdded
-        ? "bg-green-500 text-white"
-        : "bg-purple-600 text-white hover:bg-purple-700"
-    }`}
-  >
-    <span className="flex items-center justify-center gap-2 h-12">
-      {isAdded ? (
-        <>
-          <FaCheck /> Added to Cart
-        </>
-      ) : (
-        <>
-          <FaShoppingCart /> Add to Cart
-        </>
-      )}
-    </span>
-  </button>
-</div>
+            <div className="flex flex-row gap-4 items-stretch mt-4">
+              <div className="flex-1 sm:flex-none">
+                {quantity !== null && (
+                  <QuantityControl
+                    quantity={quantity}
+                    setQuantity={setQuantity}
+                  />
+                )}
+              </div>
 
-
+              <button
+                onClick={handleAddToCart}
+                disabled={!product.isAvailable || isAdded || isUnderMOQ}
+                className={`px-6 text-md font-semibold rounded-md transition h-12 ${
+                  !product.isAvailable || isUnderMOQ
+                    ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                    : isAdded
+                    ? "bg-green-500 text-white"
+                    : "bg-purple-600 text-white hover:bg-purple-700 cursor-pointer "
+                }`}
+              >
+                <span className="flex items-center justify-center gap-2">
+                  {isAdded ? (
+                    <>
+                      <FaCheck /> Added to Cart
+                    </>
+                  ) : (
+                    <>
+                      <FaShoppingCart /> Add to Cart
+                    </>
+                  )}
+                </span>
+              </button>
+            </div>
           </div>
         </div>
       </div>

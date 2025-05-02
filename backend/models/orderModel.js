@@ -14,30 +14,41 @@ const orderSchema = new mongoose.Schema(
     },
     orderItems: [
       {
-        product: { type: mongoose.Schema.Types.ObjectId, required: true, ref: "Product" },
+        product: {
+          type: mongoose.Schema.Types.ObjectId,
+          required: true,
+          ref: "Product",
+        },
+        productName: { type: String, required: true },
         qty: { type: Number, required: true },
         unitPrice: { type: Number, required: true },
       },
     ],
-    shippingAddress: {
-      type: String,
-      required: true,
-      default: "No address provided for this order!",
+    invoice: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Invoice",
     },
     totalPrice: { type: Number, required: true, default: 0.0 },
     deliveryCharge: { type: Number, required: true, default: 0.0 },
     extraFee: { type: Number, required: true, default: 0.0 },
-    deliveredBy: { type: String, default: "" },
+
+    // ✅ Leave empty if not filled — no need to default to empty string
+    deliveredBy: { type: String },
+
     isDelivered: { type: Boolean, required: true, default: false },
     deliveredAt: { type: Date },
+
     status: {
       type: String,
-      enum: [ "Processing", "Delivered","Returned", "Cancelled"],
+      enum: ["Processing", "Delivered", "Returned", "Cancelled"],
       default: "Processing",
     },
-    clientToAdminNote: { type: String, default: "" },
-    adminToAdminNote: { type: String, default: "" },
-    adminToClientNote: { type: String, default: "" },
+
+    // ✅ Notes: if not provided, should be undefined, not an empty string
+    clientToAdminNote: { type: String },
+    adminToAdminNote: { type: String },
+    adminToClientNote: { type: String },
+
     stockUpdated: { type: Boolean, required: true, default: false },
     invoiceGenerated: { type: Boolean, required: true, default: false },
   },

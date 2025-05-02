@@ -13,9 +13,8 @@ const getProductsAdmin = async (req, res) => {
   }
 
   if (categoryIds) {
-    filter.category = Array.isArray(categoryIds)
-      ? { $in: categoryIds }
-      : { $in: [categoryIds] };
+    const ids = Array.isArray(categoryIds) ? categoryIds : [categoryIds];
+    filter.category = { $in: ids };
   }
 
   if (req.query.attributes) {
@@ -26,9 +25,9 @@ const getProductsAdmin = async (req, res) => {
       };
     }
   }
-  
+
   const products = await Product.find(filter)
-    .populate("category", "name displayName productType") // ✅ helpful for admin UI
+    .populate("category", "name displayName productType") // helpful for admin UI
     .sort({ createdAt: -1 });
 
   res.json(products);
@@ -41,12 +40,13 @@ const getProducts = async (req, res) => {
   const { productType, categoryIds } = req.query;
   const filter = {};
 
-  if (productType) filter.productType = productType;
+  if (productType) {
+    filter.productType = productType;
+  }
 
   if (categoryIds) {
-    filter.category = Array.isArray(categoryIds)
-      ? { $in: categoryIds }
-      : { $in: [categoryIds] };
+    const ids = Array.isArray(categoryIds) ? categoryIds : [categoryIds];
+    filter.category = { $in: ids };
   }
 
   if (req.query.attributes) {
@@ -76,30 +76,19 @@ const getProductById = asyncHandler(async (req, res) => {
   }
 });
 
-// @desc    Create new product
+// @desc    Create a new product
 // @route   POST /api/products
-// @access  Admin
-const createProduct = asyncHandler(async (req, res) => {
-  const sample = new Product({
-    name: "Sample Product",
-    productType: "Ribbon",
-    category: req.body.category || null,
-    size: "1-inch",
-    color: "Red",
-    code: Date.now(), // just to ensure uniqueness
-    displaySpecs: "Red | 1-inch | Made in Japan",
-    origin: "Japan",
-    stock: 100,
-    moq: 1,
-    price: 10.0,
-    unit: "roll",
-    images: [],
-    description: "This is a sample product.",
-  });
-
-  const created = await sample.save();
-  res.status(201).json(created);
-});
+// @access  Private/Admin
+const createProduct = async (req, res) => {
+  try {
+    const product = new Product(req.body);
+    const createdProduct = await product.save();
+    res.status(201).json(createdProduct);
+  } catch (error) {
+    console.error("❌ Failed to create product:", error);
+    res.status(400).json({ message: "Product creation failed.", error: error.message });
+  }
+};
 
 // @desc    Update product
 // @route   PUT /api/products/:id

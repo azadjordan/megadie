@@ -19,7 +19,6 @@ const deleteOrder = asyncHandler(async (req, res) => {
   res.status(204).end(); // No Content
 });
 
-
 // @desc    Get single order by ID
 // @route   GET /api/orders/:id
 // @access  Private (User or Admin)
@@ -46,10 +45,12 @@ const getOrderById = asyncHandler(async (req, res) => {
 // @route   GET /api/orders/my
 // @access  Private
 const getMyOrders = asyncHandler(async (req, res) => {
-    const orders = await Order.find({ user: req.user._id }).sort({ createdAt: -1 });
-    res.json(orders);
-  });
-  
+  const orders = await Order.find({ user: req.user._id })
+    .populate("invoice", "invoiceNumber") // 👈 populate invoice number
+    .sort({ createdAt: -1 }); // ✅ Fixed closing parenthesis
+
+  res.json(orders);
+});
 
 // @desc    Get all orders (Admin only)
 // @route   GET /api/orders
@@ -80,14 +81,22 @@ const createOrderFromQuote = asyncHandler(async (req, res) => {
     throw new Error("Order has already been created from this quote.");
   }
 
+  // ✅ Still validate user
+  const user = await User.findById(quote.user);
+  if (!user) {
+    res.status(404);
+    throw new Error("User not found for this quote.");
+  }
+
+  // ✅ Create order without shippingAddress
   const order = new Order({
     user: quote.user,
     orderItems: quote.requestedItems.map((item) => ({
       product: item.product._id,
+      productName: item.product.name,
       qty: item.qty,
       unitPrice: item.unitPrice,
     })),
-    shippingAddress: "No address provided for this order!",
     totalPrice: quote.totalPrice,
     deliveryCharge: quote.deliveryCharge,
     extraFee: quote.extraFee,
@@ -119,7 +128,6 @@ const updateOrder = asyncHandler(async (req, res) => {
   const {
     user,
     status,
-    shippingAddress,
     totalPrice,
     deliveryCharge,
     extraFee,
@@ -147,9 +155,8 @@ const updateOrder = asyncHandler(async (req, res) => {
   }
 
   if (deliveredBy !== undefined) order.deliveredBy = deliveredBy;
-  if (deliveredAt !== undefined) order.deliveredAt = deliveredAt; // Optional manual override if needed
+  if (deliveredAt !== undefined) order.deliveredAt = deliveredAt;
 
-  if (shippingAddress !== undefined) order.shippingAddress = shippingAddress;
   if (totalPrice !== undefined) order.totalPrice = totalPrice;
   if (deliveryCharge !== undefined) order.deliveryCharge = deliveryCharge;
   if (extraFee !== undefined) order.extraFee = extraFee;
@@ -164,6 +171,5 @@ const updateOrder = asyncHandler(async (req, res) => {
   const updated = await order.save();
   res.json(updated);
 });
-
 
 export { getOrders, createOrderFromQuote, getMyOrders, getOrderById, deleteOrder, updateOrder };

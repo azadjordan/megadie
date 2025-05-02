@@ -12,14 +12,27 @@ const Cart = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const cart = useSelector((state) => state.cart);
+  const { userInfo } = useSelector((state) => state.auth);
   const [note, setNote] = useState("");
   const [createQuote, { isLoading }] = useCreateQuoteMutation();
+
+  const hasInvalidMOQ = cart.cartItems.some(
+    (item) => item.quantity < (item.moq || 1)
+  );
 
   const handleQuantityChange = (_id, newQuantity) => {
     dispatch(updateQuantity({ _id, quantity: newQuantity }));
   };
 
   const handleSubmitQuote = async () => {
+    if (!userInfo) {
+      toast.info("You must login first");
+      setTimeout(() => {
+        navigate("/login?redirect=/cart");
+      }, 1500);
+      return;
+    }
+
     try {
       const requestedItems = cart.cartItems.map((item) => ({
         product: item._id,
@@ -29,7 +42,7 @@ const Cart = () => {
 
       await createQuote({
         requestedItems,
-        clientToAdminNote: note,
+        clientToAdminNote: note.trim() || undefined,
         totalPrice: 0,
       }).unwrap();
 
@@ -65,14 +78,13 @@ const Cart = () => {
         </div>
       ) : (
         <div className="bg-white rounded-xl shadow-sm p-6 space-y-6 border border-gray-400">
-          {/* 🧾 Cart Items */}
+          {/* Cart Items */}
           <div className="space-y-4">
             {cart.cartItems.map((item) => (
               <div
                 key={item._id}
                 className="flex flex-col sm:flex-row sm:items-center justify-between bg-gray-50 p-4 rounded-lg border border-gray-300 gap-4"
               >
-                {/* ❌ Remove */}
                 <div className="flex items-center gap-4 flex-1">
                   <button
                     onClick={() => dispatch(removeFromCart(item._id))}
@@ -83,7 +95,6 @@ const Cart = () => {
                     <IoClose size={20} />
                   </button>
 
-                  {/* 🖼 Image + Info */}
                   <div className="flex items-center gap-4">
                     <img
                       src={item.image || "https://picsum.photos/60?random=1"}
@@ -105,30 +116,43 @@ const Cart = () => {
                   </div>
                 </div>
 
-                {/* 🔢 QuantityControl */}
-                <QuantityControl
-                  quantity={item.quantity}
-                  setQuantity={(val) => handleQuantityChange(item._id, val)}
-                />
+                <div className="flex flex-col items-start gap-1">
+                  <QuantityControl
+                    quantity={item.quantity}
+                    setQuantity={(val) => handleQuantityChange(item._id, val)}
+                  />
+                  <p
+                    className={`text-xs transition-all ${
+                      item.quantity < (item.moq || 1)
+                        ? "text-red-600"
+                        : "text-transparent"
+                    }`}
+                    style={{ minHeight: "1rem" }}
+                  >
+                    {item.quantity < (item.moq || 1)
+                      ? `Minimum is ${item.moq || 1}`
+                      : " "}
+                  </p>
+                </div>
               </div>
             ))}
           </div>
 
-          {/* 📝 Note Field */}
+          {/* Note Field */}
           <div className="pt-4 border-t border-gray-200">
             <label className="block text-sm font-medium mb-2 text-gray-700">
-              What is your target price ? (optional)
+              Note? (optional)
             </label>
             <textarea
               rows="4"
-              placeholder="Enter your target price here... or any other notes..."
+              placeholder="You can write any special requests or notes here..."
               className="w-full border border-gray-300 rounded p-3 text-sm"
               value={note}
               onChange={(e) => setNote(e.target.value)}
             />
           </div>
 
-          {/* 🔘 Actions */}
+          {/* Actions */}
           <div className="pt-4 border-t border-gray-200 flex flex-col md:flex-row justify-between items-center gap-4">
             <button
               onClick={() => dispatch(clearCart())}
@@ -138,15 +162,14 @@ const Cart = () => {
             </button>
             <button
               onClick={handleSubmitQuote}
-              disabled={isLoading}
-              className="cursor-pointer font-semibold bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-md text-md flex items-center justify-center gap-2"
+              disabled={isLoading || hasInvalidMOQ}
+              className={`cursor-pointer font-semibold px-6 py-3 rounded-md text-md flex items-center justify-center gap-2 transition 
+                ${isLoading || hasInvalidMOQ
+                  ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                  : "bg-green-500 hover:bg-green-600 text-white"
+                }`}
             >
-              {isLoading ? "Submitting..." : (
-                <>
-                  
-                  Confirm Items
-                </>
-              )}
+              {isLoading ? "Submitting..." : "Request Items"}
             </button>
           </div>
         </div>

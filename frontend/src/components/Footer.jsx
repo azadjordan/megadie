@@ -13,7 +13,8 @@ const Footer = () => {
         <div className="flex space-x-6 text-sm">
           <FooterLink href="/about" text="About" />
           <FooterLink href="/contact" text="Contact" />
-          <FooterLink href="/privacy" text="Privacy Policy" />
+          <FooterLink href="/privacy-policy" text="Privacy Policy" />
+          <FooterLink href="/terms" text="Terms & Conditions" />
         </div>
 
         {/* Right Side - Copyright */}

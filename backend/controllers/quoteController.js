@@ -4,6 +4,8 @@ import sendEmail from "../utils/sendEmail.js";
 import buildQuoteEmail from "../utils/quoteRequestEmail.js";
 import fs from "fs/promises";
 import puppeteer from "puppeteer";
+import User from '../models/userModel.js';
+
 
 // @desc    Generate PDF version of a quote using Puppeteer and Tailwind template
 // @route   GET /api/quotes/:id/pdf
@@ -60,7 +62,6 @@ export const getQuotePDF = asyncHandler(async (req, res) => {
   res.end(pdfBuffer);
 });
 
-
 // @desc    Get logged-in user's own quotes
 // @route   GET /api/quotes/my
 // @access  Private
@@ -108,19 +109,18 @@ export const createQuote = asyncHandler(async (req, res) => {
     totalPrice: 0,
   });
 
-  console.log("✅ Quote created with ID:", quote._id);
-
-  // populate product names for email
   const populatedQuote = await quote.populate("requestedItems.product", "name");
 
   try {
     await sendEmail({
       to: ["azadkkurdi@gmail.com", "almomani95hu@gmail.com"],
       subject: "New Quote Request Received",
-      html: buildQuoteEmail({ user: req.user, quote: populatedQuote })
+      html: buildQuoteEmail({ user: req.user, quote: populatedQuote }),
     });
   } catch (error) {
+    console.error("❌ Failed to send email:", error);
   }
+
   res.status(201).json(quote);
 });
 

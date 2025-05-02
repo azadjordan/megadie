@@ -25,6 +25,7 @@ const PaymentList = () => {
                 <th className="px-4 py-3 font-medium">Invoice</th>
                 <th className="px-4 py-3 font-medium">Amount</th>
                 <th className="px-4 py-3 font-medium">Method</th>
+                <th className="px-4 py-3 font-medium">Paid To</th> {/* ✅ New column */}
                 <th className="px-4 py-3 font-medium">Status</th>
                 <th className="px-4 py-3 font-medium">Note</th>
               </tr>
@@ -44,6 +45,7 @@ const PaymentList = () => {
                   </td>
                   <td className="px-4 py-3">{payment.amount.toFixed(2)} AED</td>
                   <td className="px-4 py-3">{payment.paymentMethod}</td>
+                  <td className="px-4 py-3">{payment.paidTo || "-"}</td> {/* ✅ New value */}
                   <td className="px-4 py-3">
                     <span
                       className={`px-2 py-1 rounded text-xs font-semibold

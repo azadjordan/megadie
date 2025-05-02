@@ -1,9 +1,8 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import {
-  useGetInvoiceByIdQuery,
-} from "../slices/invoicesApiSlice";
+import { useGetInvoiceByIdQuery } from "../slices/invoicesApiSlice";
 import { useAddPaymentFromInvoiceMutation } from "../slices/paymentsApiSlice";
+import { toast } from "react-toastify";
 
 const PaymentAdd = () => {
   const { id: invoiceId } = useParams();
@@ -17,6 +16,7 @@ const PaymentAdd = () => {
     paymentMethod: "Cash",
     paymentDate: new Date().toISOString().split("T")[0],
     note: "",
+    paidTo: "", // ✅ Add to form state
   });
 
   useEffect(() => {
@@ -42,7 +42,13 @@ const PaymentAdd = () => {
     const paymentAmount = parseFloat(formState.amount);
 
     if (!paymentAmount || paymentAmount <= 0) {
-      return alert("Please enter a valid payment amount.");
+      toast.warn("Please enter a valid payment amount.");
+      return;
+    }
+
+    if (!formState.paidTo || formState.paidTo.trim() === "") {
+      toast.warn("Please enter who received the payment (paidTo).");
+      return;
     }
 
     try {
@@ -52,13 +58,14 @@ const PaymentAdd = () => {
         paymentMethod: formState.paymentMethod,
         note: formState.note,
         paymentDate: formState.paymentDate,
+        paidTo: formState.paidTo,
       }).unwrap();
 
-      alert("✅ Payment recorded and invoice updated.");
-      navigate("/admin/invoices");
+      toast.success("Payment recorded and invoice updated.");
+      navigate("/admin/invoices", { state: { refetch: true } });
     } catch (err) {
       console.error("❌ Failed to add payment:", err);
-      alert("Something went wrong. Please try again.");
+      toast.error("Something went wrong. Please try again.");
     }
   };
 
@@ -74,7 +81,6 @@ const PaymentAdd = () => {
         <p className="text-red-600">Failed to load invoice details.</p>
       ) : (
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Invoice Info */}
           <div className="bg-gray-50 border p-4 rounded">
             <p><strong>Invoice:</strong> {invoice.invoiceNumber}</p>
             <p><strong>User:</strong> {invoice.user?.name}</p>
@@ -83,7 +89,6 @@ const PaymentAdd = () => {
             <p><strong>Status:</strong> {invoice.status}</p>
           </div>
 
-          {/* Payment Form */}
           <div>
             <label className="block text-sm font-medium mb-1">Amount</label>
             <input
@@ -120,6 +125,19 @@ const PaymentAdd = () => {
               name="paymentDate"
               value={formState.paymentDate}
               onChange={handleChange}
+              className="w-full border rounded px-3 py-2"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1">Paid To</label>
+            <input
+              type="text"
+              name="paidTo"
+              value={formState.paidTo}
+              onChange={handleChange}
+              placeholder="e.g. Ali, Front Desk, Accountant"
               className="w-full border rounded px-3 py-2"
               required
             />

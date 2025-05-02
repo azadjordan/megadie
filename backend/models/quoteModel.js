@@ -2,7 +2,12 @@ import mongoose from "mongoose";
 
 const quoteSchema = new mongoose.Schema(
   {
-    user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+
     requestedItems: [
       {
         product: {
@@ -14,6 +19,7 @@ const quoteSchema = new mongoose.Schema(
         unitPrice: { type: Number, required: true },
       },
     ],
+
     deliveryCharge: { type: Number, required: true, default: 0.0 },
     extraFee: { type: Number, required: true, default: 0.0 },
     totalPrice: { type: Number, required: true, default: 0.0 },
@@ -24,12 +30,15 @@ const quoteSchema = new mongoose.Schema(
       default: "Requested",
     },
 
-    adminToAdminNote: { type: String, default: "" },
-    clientToAdminNote: { type: String, default: "" },
-    AdminToClientNote: { type: String, default: "" },
+    adminToAdminNote: String,       // ✅ Removed default: ""
+    clientToAdminNote: String,      // ✅ Removed default: ""
+    adminToClientNote: String,      // ✅ Renamed for consistency, removed default
 
     isOrderCreated: { type: Boolean, default: false },
-    createdOrderId: { type: mongoose.Schema.Types.ObjectId, ref: "Order" },
+    createdOrderId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Order",
+    },
   },
   { timestamps: true }
 );

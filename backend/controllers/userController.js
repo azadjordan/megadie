@@ -19,7 +19,8 @@ const authUser = asyncHandler(async(req,res) => {
             name: user.name,
             phoneNumber: user.phoneNumber,
             email: user.email,
-            isAdmin: user.isAdmin
+            isAdmin: user.isAdmin,
+            address: user.address,
         })
 
     } else {

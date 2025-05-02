@@ -9,8 +9,7 @@ const categorySchema = new mongoose.Schema(
     },
 
     displayName: {
-      type: String,
-      default: "", // e.g., "Satin Ribbon"
+      type: String, // ✅ Removed default: "" for cleaner conditionals
     },
 
     productType: {
@@ -24,13 +23,12 @@ const categorySchema = new mongoose.Schema(
         Key: { type: String, required: true },            // e.g., "Color"
         displayName: { type: String, required: true },    // e.g., "Color"
         values: { type: [String], required: true },       // e.g., ["Red", "Blue"]
-        order: { type: Number, default: 0 },              // ✅ New: Sort order
+        order: { type: Number, default: 0 },              // ✅ Used for filter display sorting
       },
     ],
 
     description: {
-      type: String,
-      default: "",
+      type: String, // ✅ Removed default: ""
     },
 
     position: {
@@ -44,8 +42,7 @@ const categorySchema = new mongoose.Schema(
     },
 
     image: {
-      type: String,
-      default: "",
+      type: String, // ✅ Removed default: ""
     },
   },
   { timestamps: true }

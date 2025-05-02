@@ -42,11 +42,11 @@ const invoiceSchema = new mongoose.Schema(
       enum: ["Unpaid", "Partially Paid", "Paid", "Overdue"],
       default: "Unpaid",
     },
+
+    // ✅ Removed default empty string (it's better to omit empty notes)
     adminNote: {
       type: String,
-      default: "",
     },
-
   },
   { timestamps: true }
 );

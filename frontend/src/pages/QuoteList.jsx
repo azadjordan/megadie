@@ -5,12 +5,25 @@ import {
 import { useCreateOrderFromQuoteMutation } from "../slices/ordersApiSlice";
 import { Link } from "react-router-dom";
 import { FaEdit, FaTrash, FaShareAlt } from "react-icons/fa";
+import { toast } from "react-toastify";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 
 const QuoteList = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
   const { data: quotes = [], isLoading, error, refetch } = useGetQuotesQuery();
   const [deleteQuote] = useDeleteQuoteMutation();
   const [createOrderFromQuote, { isLoading: isCreating }] =
     useCreateOrderFromQuoteMutation();
+
+    useEffect(() => {
+      if (location.state?.refetch) {
+        refetch();
+        window.history.replaceState({}, document.title); // optional: clears state
+      }
+    }, [location.state, refetch]);
+    
 
   const handleDelete = async (id) => {
     const confirmDelete = window.confirm(
@@ -22,8 +35,8 @@ const QuoteList = () => {
       await deleteQuote(id).unwrap();
       refetch();
     } catch (err) {
-      console.error("❌ Failed to delete quote", err);
-      alert("Failed to delete quote. Check console for details.");
+      console.error("Failed to delete quote", err);
+      toast.error("Failed to delete quote.");
     }
   };
 
@@ -34,16 +47,29 @@ const QuoteList = () => {
     window.open(url, "_blank");
   };
 
-  const handleCreateOrder = async (quoteId) => {
+  const handleCreateOrder = async (quote) => {
+    if (quote.status !== "Confirmed") {
+      toast.warn("Quote must be Confirmed to create an order.");
+      return;
+    }
+  
+    if (!quote.totalPrice || quote.totalPrice <= 0) {
+      const confirmFree = window.confirm(
+        "This order has a total price of 0 AED.\nAre you sure you want to create it as a free order?"
+      );
+      if (!confirmFree) return;
+    }
+  
     try {
-      await createOrderFromQuote(quoteId).unwrap();
-      alert("✅ Order created successfully!");
-      refetch();
+      await createOrderFromQuote(quote._id).unwrap();
+      toast.success("Order created successfully!");
+      navigate("/admin/orders", { state: { fromQuoteOrderCreation: true } });
     } catch (err) {
-      console.error("❌ Order creation failed", err);
-      alert("Failed to create order.");
+      console.error("Order creation failed", err);
+      toast.error("Failed to create order.");
     }
   };
+  
 
   return (
     <div className="p-6 w-full">
@@ -117,7 +143,7 @@ const QuoteList = () => {
                       </span>
                     ) : (
                       <button
-                        onClick={() => handleCreateOrder(quote._id)}
+                        onClick={() => handleCreateOrder(quote)}
                         disabled={isCreating}
                         className="cursor-pointer text-xs text-white bg-purple-600 hover:bg-purple-700 px-3 py-1 rounded disabled:opacity-50"
                       >

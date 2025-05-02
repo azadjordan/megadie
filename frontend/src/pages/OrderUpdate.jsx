@@ -16,7 +16,6 @@ const UpdateOrder = () => {
 
   const [form, setForm] = useState({
     user: "",
-    shippingAddress: "",
     totalPrice: 0,
     deliveryCharge: 0,
     extraFee: 0,
@@ -35,7 +34,6 @@ const UpdateOrder = () => {
     if (order) {
       setForm({
         user: order.user?._id || "",
-        shippingAddress: order.shippingAddress || "",
         totalPrice: order.totalPrice,
         deliveryCharge: order.deliveryCharge,
         extraFee: order.extraFee,
@@ -67,7 +65,7 @@ const UpdateOrder = () => {
     try {
       await updateOrder({ id: orderId, ...form }).unwrap();
       alert("Order updated");
-      navigate("/admin/orders");
+      navigate("/admin/orders", { state: { refetch: true } });
     } catch (err) {
       console.error("Update failed", err);
       alert("Failed to update order");
@@ -130,18 +128,7 @@ const UpdateOrder = () => {
           </div>
         </div>
 
-        {/* Address + Charges */}
-        <div>
-          <label>Shipping Address</label>
-          <input
-            type="text"
-            name="shippingAddress"
-            value={form.shippingAddress}
-            onChange={handleChange}
-            className="w-full border px-2 py-1 rounded"
-          />
-        </div>
-
+        {/* Charges */}
         <div className="grid grid-cols-3 gap-4">
           <div>
             <label>Total Price (AED)</label>

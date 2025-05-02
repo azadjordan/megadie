@@ -9,6 +9,7 @@ export const productsApiSlice = apiSlice.injectEndpoints({
         const params = new URLSearchParams();
 
         if (productType) params.append("productType", productType);
+
         if (categoryIds?.length > 0) {
           for (const id of categoryIds) {
             params.append("categoryIds", id);
@@ -23,22 +24,22 @@ export const productsApiSlice = apiSlice.injectEndpoints({
           }
         }
 
-        const fullQuery = `${PRODUCTS_URL}?${params.toString()}`;
-        return fullQuery;
+        return `${PRODUCTS_URL}?${params.toString()}`;
       },
     }),
 
     getProductsAdmin: builder.query({
       query: ({ productType, categoryIds, attributes }) => {
         const params = new URLSearchParams();
-
+    
         if (productType) params.append("productType", productType);
+    
         if (categoryIds?.length > 0) {
           for (const id of categoryIds) {
             params.append("categoryIds", id);
           }
         }
-
+    
         if (attributes) {
           for (const key in attributes) {
             for (const value of attributes[key]) {
@@ -46,11 +47,12 @@ export const productsApiSlice = apiSlice.injectEndpoints({
             }
           }
         }
-
+    
         return `/api/products/admin?${params.toString()}`;
       },
     }),
-
+    
+    
     // ✅ Add this
     getProductById: builder.query({
       query: (id) => `${PRODUCTS_URL}/${id}`,
@@ -89,7 +91,7 @@ export const productsApiSlice = apiSlice.injectEndpoints({
 
 export const {
   useGetProductsQuery,
-  useGetProductsAdminQuery, 
+  useGetProductsAdminQuery,
   useGetProductByIdQuery,
   useCreateProductMutation,
   useUpdateProductMutation,

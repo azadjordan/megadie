@@ -1,68 +1,38 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useSelector } from "react-redux";
 import {
-  useGetProductsAdminQuery,
-  useCreateProductMutation,
   useDeleteProductMutation,
+  useGetProductsAdminQuery,
 } from "../slices/productsApiSlice";
 import { Link } from "react-router-dom";
 import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
 import AdminProductFilters from "../components/AdminProductFilters";
 
 const ProductList = () => {
-  const { selectedProductType, selectedCategoryIds, selectedAttributes } =
-    useSelector((state) => state.adminFilters);
+  const {
+    selectedProductType,
+    selectedCategoryIds,
+    selectedAttributes,
+  } = useSelector((state) => state.adminFilters);
 
-  const [page] = useState(1);
-  const [createProduct] = useCreateProductMutation();
-  const [deleteProduct] = useDeleteProductMutation();
+  const query = {
+    ...(selectedProductType && { productType: selectedProductType }),
+    ...(selectedCategoryIds.length > 0 && { categoryIds: selectedCategoryIds }),
+    ...(Object.keys(selectedAttributes).length > 0 && { attributes: selectedAttributes }),
+  };
 
   const {
     data: products = [],
     isLoading,
     error,
     refetch,
-  } = useGetProductsAdminQuery({
-    productType: selectedProductType,
-    categoryIds: selectedCategoryIds,
-    attributes: selectedAttributes,
-  });
+  } = useGetProductsAdminQuery(query);
+
+  const [deleteProduct] = useDeleteProductMutation();
 
   useEffect(() => {
-    refetch();
-  }, [selectedProductType, selectedCategoryIds, selectedAttributes, refetch]);
-
-  const handleCreateProduct = async () => {
-    try {
-      if (!selectedCategoryIds.length) {
-        alert("Please select a category first.");
-        return;
-      }
-
-      await createProduct({
-        name: "Sample Product",
-        productType: selectedProductType || "Ribbon",
-        category: selectedCategoryIds[0],
-        size: "1-inch",
-        color: "Red",
-        code: `CODE-${Math.floor(Math.random() * 10000)}`,
-        displaySpecs: "Red | 1-inch",
-        stock: 100,
-        moq: 5,
-        isAvailable: true,
-        origin: "China",
-        storageLocation: "Warehouse A - Shelf 1",
-        price: 10.5,
-        unit: "roll",
-        images: [],
-        description: "This is a sample product.",
-      }).unwrap();
-      refetch();
-    } catch (err) {
-      console.error("❌ Failed to create product", err);
-      alert("Failed to create product. Check console for details.");
-    }
-  };
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [selectedProductType, selectedCategoryIds, selectedAttributes]);
 
   const handleDeleteProduct = async (id) => {
     const confirmDelete = window.confirm("Are you sure you want to delete this product?");
@@ -80,20 +50,20 @@ const ProductList = () => {
   return (
     <div className="flex flex-col md:flex-row gap-4 p-6 w-full">
       {/* 🔹 Sidebar Filters */}
-      <aside className="w-full md:w-1/5">
+      <aside className="w-full md:w-1/4 h-fit">
         <AdminProductFilters />
       </aside>
 
       {/* 🔹 Product Table Section */}
-      <main className="w-full md:w-4/5">
+      <main className="w-full md:w-3/4">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-2xl font-semibold text-purple-700">All Products</h2>
-          <button
-            onClick={handleCreateProduct}
+          <Link
+            to="/admin/products/create"
             className="inline-flex items-center gap-2 bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 transition text-sm"
           >
             <FaPlus /> Create Product
-          </button>
+          </Link>
         </div>
 
         {isLoading ? (
@@ -108,8 +78,7 @@ const ProductList = () => {
               <thead className="bg-gray-50 text-gray-700 text-left">
                 <tr className="border-b border-gray-200">
                   <th className="px-4 py-3 font-medium">Name</th>
-                  <th className="px-4 py-3 font-medium">Category</th>
-                  <th className="px-4 py-3 font-medium">Type</th>
+                  <th className="px-4 py-3 font-medium">Specs</th>
                   <th className="px-4 py-3 font-medium">Code</th>
                   <th className="px-4 py-3 font-medium">Size</th>
                   <th className="px-4 py-3 font-medium">Stock</th>
@@ -124,8 +93,9 @@ const ProductList = () => {
                     className="hover:bg-gray-200 transition-colors duration-150"
                   >
                     <td className="px-4 py-3">{prod.name}</td>
-                    <td className="px-4 py-3">{prod.category?.name || "-"}</td>
-                    <td className="px-4 py-3">{prod.productType}</td>
+                    <td className="px-4 py-3 whitespace-pre-wrap">
+                      {prod.displaySpecs || "-"}
+                    </td>
                     <td className="px-4 py-3">{prod.code || "-"}</td>
                     <td className="px-4 py-3">{prod.size}</td>
                     <td className="px-4 py-3">{prod.stock}</td>

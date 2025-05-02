@@ -1,6 +1,7 @@
 import asyncHandler from "../middleware/asyncHandler.js";
 import Payment from "../models/paymentModel.js";
 import Invoice from "../models/invoiceModel.js";
+import { roundToTwo } from "../utils/rounding.js"; // ✅ Add this utility function
 
 // @desc Get all payments for a specific invoice
 // @route GET /api/payments?invoice=invoiceId
@@ -16,12 +17,11 @@ const getPaymentsByInvoice = asyncHandler(async (req, res) => {
   res.json(payments);
 });
 
-
 // @desc Add payment to invoice and update status based on math
 // @route POST /api/payments/from-invoice/:invoiceId
 // @access Private/Admin
 const addPaymentToInvoice = asyncHandler(async (req, res) => {
-  const { amount, paymentMethod, note, paymentDate } = req.body;
+  const { amount, paymentMethod, note, paymentDate, paidTo } = req.body;
   const { invoiceId } = req.params;
 
   const invoice = await Invoice.findById(invoiceId);
@@ -30,39 +30,45 @@ const addPaymentToInvoice = asyncHandler(async (req, res) => {
     throw new Error("Invoice not found");
   }
 
-  const remainingDue = invoice.amountDue - invoice.amountPaid;
+  const remainingDue = roundToTwo(invoice.amountDue - invoice.amountPaid);
+  const roundedAmount = roundToTwo(amount);
 
-  if (amount <= 0) {
+  if (roundedAmount <= 0) {
     res.status(400);
     throw new Error("Payment amount must be greater than zero.");
   }
 
-  if (amount > remainingDue) {
+  if (roundedAmount > remainingDue) {
     res.status(400);
     throw new Error(
       `Payment amount exceeds remaining balance. Remaining due: ${remainingDue.toFixed(2)}`
     );
   }
 
+  if (!paidTo || paidTo.trim() === "") {
+    res.status(400);
+    throw new Error("The 'paidTo' field is required.");
+  }
+
   const payment = new Payment({
     invoice: invoice._id,
     user: invoice.user,
-    amount,
+    amount: roundedAmount,
     paymentMethod,
     note,
     paymentDate: paymentDate || Date.now(),
+    paidTo: paidTo.trim(), // ✅ Store plain string
   });
 
   await payment.save();
 
-  // ✅ Link this payment to the invoice
   invoice.payments.push(payment._id);
+  invoice.amountPaid = roundToTwo(invoice.amountPaid + roundedAmount);
 
-  // ✅ Simple addition
-  invoice.amountPaid += amount;
+  const isFullyPaid =
+    roundToTwo(invoice.amountPaid) === roundToTwo(invoice.amountDue);
 
-  // ✅ Update status and paidAt
-  if (invoice.amountPaid >= invoice.amountDue) {
+  if (isFullyPaid) {
     invoice.status = "Paid";
     invoice.paidAt = new Date();
   } else if (invoice.amountPaid > 0) {
@@ -79,10 +85,9 @@ const addPaymentToInvoice = asyncHandler(async (req, res) => {
     message: "✅ Payment added and invoice updated.",
     invoice,
     payment,
-    remainingDue: invoice.amountDue - invoice.amountPaid,
+    remainingDue: roundToTwo(invoice.amountDue - invoice.amountPaid),
   });
 });
-
 
 // @desc    Get all payments (Admin)
 // @route   GET /api/payments
@@ -96,7 +101,6 @@ const getAllPayments = asyncHandler(async (req, res) => {
     res.json(payments);
   });
   
-
 // @desc    Get a payment by ID (Admin)
 // @route   GET /api/payments/:id
 // @access  Private/Admin
@@ -125,29 +129,6 @@ const getMyPayments = asyncHandler(async (req, res) => {
     res.json(payments);
   });
   
-// @desc    Update a payment by ID (Admin only)
-// @route   PUT /api/payments/:id
-// @access  Private/Admin
-const updatePayment = asyncHandler(async (req, res) => {
-  const payment = await Payment.findById(req.params.id);
-
-  if (!payment) {
-    res.status(404);
-    throw new Error("Payment not found");
-  }
-
-  const { amount, paymentMethod, paymentDate, note, status } = req.body;
-
-  payment.amount = amount ?? payment.amount;
-  payment.paymentMethod = paymentMethod ?? payment.paymentMethod;
-  payment.paymentDate = paymentDate ?? payment.paymentDate;
-  payment.note = note ?? payment.note;
-  payment.status = status ?? payment.status;
-
-  const updated = await payment.save();
-  res.json(updated);
-});
-
 // @desc    Delete a payment by ID (Admin only)
 // @route   DELETE /api/payments/:id
 // @access  Private/Admin
@@ -166,7 +147,6 @@ const deletePayment = asyncHandler(async (req, res) => {
 export {
   getAllPayments,
   getPaymentById,
-  updatePayment,
   deletePayment,
     addPaymentToInvoice,
     getMyPayments,

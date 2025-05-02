@@ -30,11 +30,14 @@ import UserProfile from "./pages/account/UserProfile.jsx";
 import UserRequests from "./pages/account/UserRequests.jsx";
 import UserOrders from "./pages/account/UserOrders.jsx";
 import UserInvoices from "./pages/account/UserInvoices.jsx";
-import UserPayments from "./pages/account/UserPayments.jsx";
-import UserOrder from "./pages/account/UserOrder.jsx";
 import OrderDetails from "./pages/OrderDetails.jsx";
 import OrderUpdate from "./pages/OrderUpdate.jsx";
 import PaymentAdd from "./pages/PaymentAdd.jsx";
+import About from "./pages/About.jsx";
+import ContactUs from "./pages/ContactUs.jsx";
+import PrivacyPolicy from "./pages/PrivacyPolicy.jsx";
+import Terms from "./pages/Terms.jsx";
+import ProductCreate from "./pages/ProductCreate.jsx";
 
 const App = () => {
   return (
@@ -66,6 +69,10 @@ const App = () => {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/product/:id" element={<Product />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/contact" element={<ContactUs />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/terms" element={<Terms />} />
 
           <Route element={<PrivateRoute />}>
             <Route path="/account" element={<AccountDashboard />}>
@@ -73,9 +80,7 @@ const App = () => {
               <Route path="profile" element={<UserProfile />} />
               <Route path="requests" element={<UserRequests />} />
               <Route path="orders" element={<UserOrders />} />
-              <Route path="orders/:id" element={<UserOrder />} />
               <Route path="invoices" element={<UserInvoices />} />
-              <Route path="payments/my" element={<UserPayments />} />
             </Route>
           </Route>
 
@@ -86,6 +91,7 @@ const App = () => {
             <Route path="/admin/orders/:id" element={<OrderDetails />} />
             <Route path="/admin/invoices/invoice-order/:id" element={<OrderDetails />} />
             <Route path="/admin/products" element={<ProductList />} />
+            <Route path="/admin/products/create" element={<ProductCreate />} />
             <Route
               path="/admin/products/:id/edit"
               element={<ProductUpdate />}

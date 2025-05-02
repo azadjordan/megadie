@@ -1,10 +1,9 @@
-// slices/adminFiltersSlice.js
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
-  selectedProductType: "Ribbon",
+  selectedProductType: null,
   selectedCategoryIds: [],
-  selectedAttributes: {}, // e.g., { color: ["Red"], width: ["1-inch"] }
+  selectedAttributes: {},
 };
 
 const adminFiltersSlice = createSlice({
@@ -13,28 +12,30 @@ const adminFiltersSlice = createSlice({
   reducers: {
     setProductType: (state, action) => {
       state.selectedProductType = action.payload;
-      state.selectedCategoryIds = []; // ✅ Reset on product type change
+      state.selectedCategoryIds = [];
       state.selectedAttributes = {};
     },
-    setCategoryId: (state, action) => {
+    toggleCategoryId: (state, action) => {
       const id = action.payload;
-      let updatedIds;
-
       if (state.selectedCategoryIds.includes(id)) {
-        updatedIds = state.selectedCategoryIds.filter(cid => cid !== id);
+        state.selectedCategoryIds = state.selectedCategoryIds.filter((c) => c !== id);
       } else {
-        updatedIds = [...state.selectedCategoryIds, id];
+        state.selectedCategoryIds.push(id);
       }
-
-      state.selectedCategoryIds = updatedIds;
-      state.selectedAttributes = {}; // ✅ Reset attributes on category change
     },
-    toggleAttributeValue: (state, action) => {
+    toggleAttribute: (state, action) => {
       const { key, value } = action.payload;
       const current = state.selectedAttributes[key] || [];
-      state.selectedAttributes[key] = current.includes(value)
-        ? current.filter(v => v !== value)
-        : [...current, value];
+      if (current.includes(value)) {
+        const updated = current.filter((v) => v !== value);
+        if (updated.length > 0) {
+          state.selectedAttributes[key] = updated;
+        } else {
+          delete state.selectedAttributes[key];
+        }
+      } else {
+        state.selectedAttributes[key] = [...current, value];
+      }
     },
     resetFilters: () => initialState,
   },
@@ -42,9 +43,8 @@ const adminFiltersSlice = createSlice({
 
 export const {
   setProductType,
-  setCategoryId,
-  toggleAttributeValue,
+  toggleCategoryId,
+  toggleAttribute,
   resetFilters,
 } = adminFiltersSlice.actions;
-
 export default adminFiltersSlice.reducer;

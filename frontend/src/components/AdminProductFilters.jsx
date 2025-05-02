@@ -2,57 +2,43 @@ import { useDispatch, useSelector } from "react-redux";
 import { useGetCategoriesQuery } from "../slices/categoriesApiSlice";
 import {
   setProductType,
-  setCategoryId,
-  toggleAttributeValue,
+  toggleCategoryId,
+  toggleAttribute,
   resetFilters,
 } from "../slices/adminFiltersSlice";
 import { FaBoxOpen, FaFilter } from "react-icons/fa";
 
 const AdminProductFilters = () => {
   const dispatch = useDispatch();
-  const { selectedProductType, selectedCategoryIds, selectedAttributes } = useSelector(
-    (state) => state.adminFilters
-  );
+  const {
+    selectedProductType,
+    selectedCategoryIds,
+    selectedAttributes,
+  } = useSelector((state) => state.adminFilters);
 
   const { data: categories = [], isLoading, error } = useGetCategoriesQuery();
 
-  if (isLoading || error) return null;
+  if (isLoading) return <p className="text-sm italic p-4">Loading filters...</p>;
+  if (error) return <p className="text-sm text-red-500 p-4">Failed to load filters.</p>;
 
   const productTypes = [...new Set(categories.map((cat) => cat.productType))];
   const relatedCategories = categories.filter((cat) => cat.productType === selectedProductType);
 
-  const allFilters =
-    selectedCategoryIds.length > 0
-      ? relatedCategories.filter((cat) => selectedCategoryIds.includes(cat._id)).flatMap((cat) => cat.filters || [])
-      : relatedCategories.flatMap((cat) => cat.filters || []);
-
-  const merged = {};
-  for (const filter of allFilters) {
-    const key = filter.Key;
-    if (!merged[key]) {
-      merged[key] = { ...filter, values: [...filter.values] };
-    } else {
-      merged[key].values = [...new Set([...merged[key].values, ...filter.values])];
-    }
-  }
-
-  const filterSource = Object.values(merged).sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-
   return (
-    <div className=" text-xs text-gray-700 bg-white border border-gray-200 rounded-md p-3 space-y-4">
-      {/* 🔹 Product Type */}
-      <div>
-        <h3 className="text-sm font-semibold text-purple-700 mb-2 flex items-center gap-2">
-          <FaBoxOpen className="text-purple-500" /> Product Type
+    <div className="bg-white rounded-xl shadow-sm border border-gray-300 text-sm divide-gray-300 divide-y">
+      {/* 🔹 Product Types */}
+      <div className="p-5">
+        <h3 className="text-base font-semibold text-purple-600 mb-3 flex items-center gap-2">
+          <FaBoxOpen /> Product Type
         </h3>
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col gap-2">
           {productTypes.map((type) => (
             <button
               key={type}
               onClick={() => dispatch(setProductType(type))}
-              className={`text-left px-2 py-1 rounded text-xs font-medium transition ${
+              className={`cursor-pointer text-left px-3 py-2 rounded-md text-sm font-medium transition ${
                 selectedProductType === type
-                  ? "bg-purple-600 text-white"
+                  ? "bg-purple-500 text-white"
                   : "hover:bg-purple-100 text-gray-800"
               }`}
             >
@@ -62,20 +48,20 @@ const AdminProductFilters = () => {
         </div>
       </div>
 
-      {/* 🔹 Category */}
+      {/* 🔹 Categories */}
       {selectedProductType && (
-        <div>
-          <h4 className="text-sm font-semibold text-purple-700 mb-2 flex items-center gap-2">
-            <FaFilter className="text-purple-500" /> Categories
+        <div className="p-5">
+          <h4 className="text-base font-semibold text-purple-600 flex items-center gap-2 mb-3">
+            <FaFilter /> Categories
           </h4>
-          <div className="flex flex-wrap gap-1">
+          <div className="flex flex-wrap gap-2">
             {relatedCategories.map((cat) => {
               const isSelected = selectedCategoryIds.includes(cat._id);
               return (
                 <span
                   key={cat._id}
-                  onClick={() => dispatch(setCategoryId(cat._id))}
-                  className={`cursor-pointer px-3 py-1 rounded text-xs transition ${
+                  onClick={() => dispatch(toggleCategoryId(cat._id))}
+                  className={`cursor-pointer px-4 py-2 rounded-md text-sm transition ${
                     isSelected
                       ? "bg-purple-200 text-purple-800"
                       : "bg-gray-100 hover:bg-gray-200 text-gray-700"
@@ -89,49 +75,80 @@ const AdminProductFilters = () => {
         </div>
       )}
 
-      {/* 🔹 Attributes */}
-      {filterSource.length > 0 && (
-        <div>
-          <h4 className="text-sm font-semibold text-purple-700 mb-2 flex items-center gap-2">
-            <FaFilter className="text-purple-500" /> Attributes
+      {/* 🔹 Filters */}
+      {selectedProductType && relatedCategories.length > 0 && (
+        <div className="p-5 border-t border-gray-200">
+          <h4 className="text-base font-semibold text-purple-600 flex items-center gap-2 mb-3">
+            <FaFilter /> Filter Options
           </h4>
-          <div className="space-y-2">
-            {filterSource.map((filter) => (
-              <div key={filter.Key}>
-                <p className="font-medium text-gray-800 mb-1 text-xs">{filter.displayName}:</p>
-                <div className="flex flex-wrap gap-1 ml-1">
-                  {filter.values.map((value) => {
-                    const isSelected = selectedAttributes[filter.Key]?.includes(value);
+
+          {(() => {
+            const allFilters = {};
+            relatedCategories.forEach((cat) => {
+              cat.filters.forEach((filter) => {
+                const key = filter.Key;
+                if (!allFilters[key]) {
+                  allFilters[key] = {
+                    displayName: filter.displayName,
+                    values: new Set(),
+                    order: filter.order || 0,
+                  };
+                }
+                filter.values.forEach((val) => allFilters[key].values.add(val));
+              });
+            });
+
+            const filtersArray = Object.entries(allFilters)
+              .map(([key, { displayName, values, order }]) => ({
+                key,
+                displayName,
+                values: Array.from(values),
+                order,
+              }))
+              .sort((a, b) => a.order - b.order);
+
+            return filtersArray.map((filter) => (
+              <div key={filter.key} className="mb-4">
+                <p className="font-medium text-gray-700 mb-2">{filter.displayName}</p>
+                <div className="flex flex-wrap gap-2">
+                  {filter.values.map((val) => {
+                    const selected = selectedAttributes[filter.key]?.includes(val);
                     return (
                       <span
-                        key={value}
-                        onClick={() => dispatch(toggleAttributeValue({ key: filter.Key, value }))}
-                        className={`cursor-pointer px-2 py-1 rounded text-xs transition ${
-                          isSelected
-                            ? "bg-purple-200 text-purple-800"
-                            : "bg-gray-100 hover:bg-gray-200 text-gray-700"
+                        key={val}
+                        onClick={() =>
+                          dispatch(toggleAttribute({ key: filter.key, value: val }))
+                        }
+                        className={`px-3 py-1 rounded-md cursor-pointer text-xs transition ${
+                          selected
+                            ? "bg-purple-300 text-purple-900"
+                            : "bg-gray-100 hover:bg-purple-100 text-gray-800"
                         }`}
                       >
-                        {value}
+                        {val}
                       </span>
                     );
                   })}
                 </div>
               </div>
-            ))}
-          </div>
+            ));
+          })()}
         </div>
       )}
 
       {/* 🔹 Reset Button */}
-      <div className="pt-2 border-t border-gray-100">
-        <button
-          onClick={() => dispatch(resetFilters())}
-          className="mt-2 inline-block text-xs font-medium text-purple-600 hover:text-red-600 transition"
-        >
-          Clear Filters
-        </button>
-      </div>
+      {(selectedProductType ||
+        selectedCategoryIds.length > 0 ||
+        Object.keys(selectedAttributes).length > 0) && (
+        <div className="p-5 border-t border-gray-200">
+          <button
+            onClick={() => dispatch(resetFilters())}
+            className="text-sm text-red-600 hover:underline font-medium"
+          >
+            Clear All Filters
+          </button>
+        </div>
+      )}
     </div>
   );
 };

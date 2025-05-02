@@ -4,24 +4,33 @@ import {
   FaClipboardList,
   FaShoppingCart,
   FaFileInvoiceDollar,
-  FaMoneyCheckAlt,
 } from "react-icons/fa";
+import { useGetUserProfileQuery } from "../../slices/usersApiSlice";
 
 const navItems = [
   { label: "Profile", path: "profile", icon: <FaUser /> },
   { label: "Requests", path: "requests", icon: <FaClipboardList /> },
   { label: "Orders", path: "orders", icon: <FaShoppingCart /> },
-  { label: "Invoices", path: "invoices", icon: <FaFileInvoiceDollar /> },
-  { label: "Payments", path: "payments/my", icon: <FaMoneyCheckAlt /> },
+  { label: "Invoices & Payments", path: "invoices", icon: <FaFileInvoiceDollar /> },
 ];
 
 const AccountDashboard = () => {
+  const { data: user, isLoading, error } = useGetUserProfileQuery();
+
+  const greeting =
+    isLoading
+      ? "Hi..."
+      : error
+      ? "Hi there!"
+      : `${user?.name?.split(" ")[0] || "Hello"} 👋`;
+
   return (
     <div className="flex min-h-screen bg-gray-50">
       {/* Sidebar */}
       <aside className="w-64 bg-white border-r border-gray-200 shadow-sm hidden md:flex flex-col p-6">
-        <h2 className="text-2xl font-bold text-purple-700 mb-10">my Account</h2>
-
+        <h2 className="text-xl font-bold mb-6 text-center text-purple-500 rounded">
+          {greeting}
+        </h2>
         <nav className="flex flex-col gap-2">
           {navItems.map(({ label, path, icon }) => (
             <NavLink

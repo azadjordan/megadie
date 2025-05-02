@@ -2,7 +2,6 @@ import express from "express";
 import {
   getAllPayments,
   getPaymentById,
-  updatePayment,
   deletePayment,
   addPaymentToInvoice,
   getMyPayments,
@@ -17,7 +16,6 @@ router.route("/my").get(protect, getMyPayments);
 // THEN admin-only routes
 router.route("/").get(protect, admin, getAllPayments);
 router.route("/from-invoice/:invoiceId").post(protect, admin, addPaymentToInvoice);
-router.route("/:id").put(protect, admin, updatePayment);
 router.route("/:id").get(protect, admin, getPaymentById);
 router.route("/:id").delete(protect, admin, deletePayment);
 

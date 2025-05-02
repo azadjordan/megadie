@@ -56,7 +56,7 @@ const Header = () => {
         {/* ✅ Mobile Sidebar Menu */}
         {menuOpen && (
           <div className="md:hidden fixed top-0 right-0 w-2/3 h-full bg-white shadow-lg transition-transform duration-300">
-            <button className="absolute top-4 right-4 text-gray-600 text-3xl" onClick={() => setMenuOpen(false)}>
+            <button className="cursor-pointer absolute top-4 right-4 text-gray-600 text-3xl hover:text-red-500" onClick={() => setMenuOpen(false)}>
               <FaTimes size={28} />
             </button>
             <div className="p-8 space-y-6">
@@ -123,6 +123,6 @@ const navLinkClass = ({ isActive }) =>
   }`;
 
 // ✅ Base class for Logout button (Doesn't need active state)
-const navLinkBase = "flex items-center gap-2 font-medium transition";
+const navLinkBase = "flex items-center gap-2 font-medium transition cursor-pointer";
 
 export default Header;

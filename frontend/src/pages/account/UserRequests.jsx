@@ -5,9 +5,7 @@ const UserRequests = () => {
   const { data: quotes = [], isLoading, error } = useGetMyQuotesQuery();
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold text-purple-700 mb-6">My Requests</h1>
-
+    <div className="p-6 w-full">
       {isLoading ? (
         <p className="text-gray-500">Loading your quote requests...</p>
       ) : error ? (
@@ -15,7 +13,7 @@ const UserRequests = () => {
       ) : quotes.length === 0 ? (
         <div className="text-center py-10 bg-white rounded-xl shadow-sm border border-gray-200">
           <p className="text-gray-600 text-sm mb-4">
-            You haven’t submitted any quote requests yet.
+            No requests found. You can create a new request by browsing our products.
           </p>
           <Link
             to="/shop"
@@ -29,10 +27,10 @@ const UserRequests = () => {
           {quotes.map((quote) => (
             <div
               key={quote._id}
-              className="bg-white rounded-xl shadow-sm border border-gray-300 px-6 py-5 space-y-4 hover:shadow-lg transition"
+              className="bg-white rounded-xl shadow-sm border border-gray-200 px-6 py-5 hover:shadow-md transition"
             >
-              {/* Status + Date */}
-              <div className="flex justify-between items-center text-sm">
+              {/* Header: Status + Date */}
+              <div className="flex justify-between items-center mb-3 text-sm">
                 <span
                   className={`px-3 py-1 rounded-full font-medium text-xs ${
                     quote.status === "Confirmed"
@@ -40,7 +38,7 @@ const UserRequests = () => {
                       : quote.status === "Rejected"
                       ? "bg-red-100 text-red-700"
                       : quote.status === "Requested"
-                      ? "bg-yellow-100 text-yellow-700"
+                      ? "bg-yellow-100 text-yellow-800"
                       : quote.status === "Quoted"
                       ? "bg-purple-100 text-purple-700"
                       : "bg-gray-100 text-gray-600"
@@ -48,41 +46,42 @@ const UserRequests = () => {
                 >
                   {quote.status}
                 </span>
-                <span className="text-gray-400">
+                <span className="text-gray-400 text-sm">
                   {new Date(quote.createdAt).toLocaleDateString()}
                 </span>
               </div>
 
-              {/* Requested Items */}
-              <div className="text-sm text-gray-700 space-y-1">
-                <p className="text-gray-500 font-medium mb-1">Requested Items</p>
+              {/* Items List */}
+              <div className="text-sm text-gray-700 mb-4">
+                <p className="text-gray-500 font-medium mb-2">Requested Items</p>
                 {quote.requestedItems.map((item, i) => (
                   <div key={i}>
                     • <span className="font-semibold">{item.product?.name}</span> — {item.qty} pcs{" "}
-                    {quote.status === "Quoted" && typeof item.unitPrice === "number" && (
-                      <>
-                        ={" "}
-                        <span className="font-medium">
-                          {(item.qty * item.unitPrice).toFixed(2)} AED
-                        </span>
-                      </>
-                    )}
+                    {quote.status === "Quoted" &&
+                      typeof item.unitPrice === "number" && (
+                        <>
+                          ={" "}
+                          <span className="font-medium">
+                            {(item.qty * item.unitPrice).toFixed(2)} AED
+                          </span>
+                        </>
+                      )}
                   </div>
                 ))}
-
-                {/* Friendly message for Requested quotes */}
-                {quote.status === "Requested" && (
-                  <div className="w-fit text-sm text-blue-700 bg-blue-50 border border-blue-200 rounded-md px-4 py-3 mt-3">
-                    We’ll get back to you soon with the best offer, stay tuned!
-                  </div>
-                )}
               </div>
 
-              {/* Pricing */}
+              {/* Optional Message for Requested */}
+              {quote.status === "Requested" && (
+                <div className="w-fit text-sm text-blue-700 bg-blue-50 border border-blue-200 rounded-md px-4 py-3 mb-4">
+                  We’ll get back to you soon with the best offer, stay tuned!
+                </div>
+              )}
+
+              {/* Pricing Summary */}
               {(quote.status === "Quoted" ||
                 quote.status === "Confirmed" ||
                 quote.status === "Rejected") && (
-                <div className="bg-gray-50 rounded-lg p-4 text-sm text-gray-700 space-y-1">
+                <div className="bg-gray-50 rounded-lg p-4 text-sm text-gray-700 space-y-1 border border-gray-200 mb-4">
                   {quote.status === "Quoted" && (
                     <>
                       <Row
@@ -100,17 +99,23 @@ const UserRequests = () => {
               )}
 
               {/* Notes */}
-              {quote.clientToAdminNote && (
-                <div className="text-sm text-gray-700">
-                  <p className="font-medium text-gray-500 mb-1">Your Note</p>
-                  <p className="italic">{quote.clientToAdminNote}</p>
-                </div>
+              {quote.clientToAdminNote?.trim() && (
+                <NoteBlock
+                  label="Your Note"
+                  content={
+                    quote.clientToAdminNote
+                      .split("\n")
+                      .map((line, idx) => (
+                        <p key={idx} className="italic mb-1 last:mb-0">{line}</p>
+                      ))
+                  }
+                />
               )}
-              {quote.AdminToClientNote && (
-                <div className="text-sm text-gray-700">
-                  <p className="font-medium text-gray-500 mb-1">Seller Response</p>
-                  <p>{quote.AdminToClientNote}</p>
-                </div>
+              {quote.AdminToClientNote?.trim() && (
+                <NoteBlock
+                  label="Seller Response"
+                  content={<p className="italic">{quote.AdminToClientNote}</p>}
+                />
               )}
             </div>
           ))}
@@ -128,6 +133,13 @@ const Row = ({ label, value, highlight = false }) => (
   >
     <span>{label}</span>
     <span>{value} AED</span>
+  </div>
+);
+
+const NoteBlock = ({ label, content }) => (
+  <div className="text-sm text-gray-700 mb-3">
+    <p className="font-medium text-gray-500 mb-1">{label}</p>
+    {content}
   </div>
 );
 
